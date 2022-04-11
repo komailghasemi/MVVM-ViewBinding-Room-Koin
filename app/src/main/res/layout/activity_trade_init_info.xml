@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    tools:context=".view.tradeInitInformation.TradeInitInfoActivity">
+
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/materialToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="@color/primary"
+        android:layoutDirection="rtl"
+        app:title="تنظیمات دوره معاملاتی"
+        app:titleTextColor="@color/text" />
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:text="@string/initQs1"
+                android:textColor="@color/darkPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginBottom="4dp"
+                android:backgroundTint="@color/primary"
+                android:inputType="numberSigned"
+                android:minHeight="48dp"
+                android:textColor="@color/primary"
+                android:textColorHint="@color/primary"
+                tools:ignore="SpeakableTextPresentCheck" />
+
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:text="@string/initQs2"
+                android:textColor="@color/darkPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/txtMDDPercent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="20%"
+                android:textColor="@color/primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <SeekBar
+                android:id="@+id/skbMDD"
+                style="@style/Widget.AppCompat.SeekBar.Discrete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:min="1"
+                android:padding="12dp"
+                android:progress="20"
+                android:thumbTint="@color/primary" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:text="@string/initQs3"
+                android:textColor="@color/darkPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/txtMCL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="2"
+                android:textColor="@color/primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <SeekBar
+                android:id="@+id/skbMCL"
+                style="@style/Widget.AppCompat.SeekBar.Discrete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="10"
+                android:min="1"
+                android:padding="12dp"
+                android:progress="2"
+                android:thumbTint="@color/primary" />
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/darkPrimary"
+                android:layout_margin="24dp"/>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/txtRPT"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:text="مهم : درصد ریسک (R.P.T) در هر معامله برابر است با 10 درصد"
+                android:textColor="@color/darkPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/txtMaxN"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:text="مهم : تعداد مجاز معاملات باز به صورت همزمان برابر است با 2"
+                android:textColor="@color/darkPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </ScrollView>
+</androidx.appcompat.widget.LinearLayoutCompat>

@@ -1,3 +1,6 @@
 <resources>
-    <string name="app_name">Trader Note</string>
+    <string name="app_name">دفترچه معاملات</string>
+    <string name="initQs1">سرمایه شما در ابتدای دوره معاملاتی چقدر است ؟</string>
+    <string name="initQs2">چند درصد از سرمایه کل را میتوانید متضرر شوید ؟ (M.D.D)</string>
+    <string name="initQs3">چند ضرر متوالی را میتوانید تحمل کنید ؟ (M.C.L)</string>
 </resources>

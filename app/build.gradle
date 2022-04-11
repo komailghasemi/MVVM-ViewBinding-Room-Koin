@@ -29,6 +29,9 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
@@ -40,4 +43,25 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+    // Kotlin Coroutines
+    implementation(['org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0',
+                    'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0'])
+
+    // Koin Core features -> Dependency Injection
+    implementation "io.insert-koin:koin-core:3.1.5"
+    implementation "io.insert-koin:koin-android:3.1.5"
+
+    // Font
+    implementation 'com.github.MarcinOrlowski:fonty:3.1.5'
+
+    implementation 'com.github.komailghasemi:KgRecyclerView:1.0.0'
+
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.0-alpha06"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.5.0-alpha06"
+    
+    implementation "androidx.room:room-runtime:2.4.2"
+    annotationProcessor "androidx.room:room-compiler:2.4.2"
+
+
 }
