@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -61,7 +62,10 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.5.0-alpha06"
     
     implementation "androidx.room:room-runtime:2.4.2"
-    annotationProcessor "androidx.room:room-compiler:2.4.2"
+    kapt "androidx.room:room-compiler:2.4.2"
+
+    implementation "androidx.paging:paging-runtime:3.1.1"
+    implementation "androidx.room:room-paging:2.5.0-alpha01"
 
 
 }

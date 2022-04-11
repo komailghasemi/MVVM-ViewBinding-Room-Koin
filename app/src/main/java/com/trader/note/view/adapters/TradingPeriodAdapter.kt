@@ -1,38 +1,42 @@
 package com.trader.note.view.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.marcinorlowski.fonty.Fonty
-import com.trader.note.databinding.ItemTradingPriodBinding
+import com.trader.note.databinding.ItemTradingPeriodBinding
 
-class TradingPeriodAdapter : RecyclerView.Adapter<TradingPeriodAdapter.ViewHolder>(){
+class TradingPeriodAdapter : PagingDataAdapter<String, TradingPeriodAdapter.ViewHolder>(diffCallback) {
 
-    private val dataSet : MutableList<String> = mutableListOf()
+    class ViewHolder(val binding: ItemTradingPeriodBinding) : RecyclerView.ViewHolder(binding.root)
 
-    fun set(dataSet : List<String>){
-        this.dataSet.clear()
-        this.dataSet.addAll(dataSet)
-        notifyItemRangeChanged(0 , dataSet.size)
+    companion object {
+        val diffCallback = object : DiffUtil.ItemCallback<String>() {
+            override fun areItemsTheSame(oldItem: String, newItem: String): Boolean {
+                return oldItem == newItem // id
+            }
+            override fun areContentsTheSame(oldItem: String, newItem: String): Boolean {
+                return oldItem == newItem
+            }
+        }
     }
 
-    class ViewHolder(val binding: ItemTradingPriodBinding) : RecyclerView.ViewHolder(binding.root)
+    @SuppressLint("SetTextI18n")
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val item = getItem(position)
+        holder.binding.txtName.text = "#${item?.replace(" " , "_")}"
+    }
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
-        val itemBinding = ItemTradingPriodBinding.inflate(
-            LayoutInflater.from(viewGroup.context),
-            viewGroup,
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val itemBinding = ItemTradingPeriodBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
             false
         )
         Fonty.setFonts(itemBinding.root as ViewGroup)
         return ViewHolder(itemBinding)
     }
-
-
-    override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-      //  val news = news[position]
-
-    }
-
-    override fun getItemCount() = dataSet.size
 }

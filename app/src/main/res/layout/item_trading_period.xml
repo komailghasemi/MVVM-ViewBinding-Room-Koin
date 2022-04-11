@@ -39,6 +39,7 @@
             android:paddingBottom="12dp">
 
             <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/txtName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="#استراتژی_مکدی"

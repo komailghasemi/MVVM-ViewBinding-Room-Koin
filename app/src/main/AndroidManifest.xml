@@ -11,9 +11,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TraderNote">
         <activity
-            android:name=".view.tradeInitInformation.TradeInitInfoActivity"
-            android:windowSoftInputMode="adjustResize|adjustPan"
-            android:exported="false" />
+            android:name=".view.tradingPeriod.AddTradingPeriodActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".view.main.MainActivity"
             android:exported="true">
