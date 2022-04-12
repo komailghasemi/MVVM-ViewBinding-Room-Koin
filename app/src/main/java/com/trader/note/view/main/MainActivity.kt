@@ -5,9 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.lifecycle.lifecycleScope
 import com.trader.note.databinding.ActivityMainBinding
-import com.trader.note.model.tables.TradingPeriod
 import com.trader.note.view.UI
 import com.trader.note.view.adapters.TradingPeriodAdapter
+import com.trader.note.view.trade.AddTradeActivity
 import com.trader.note.view.tradingPeriod.AddTradingPeriodActivity
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -47,6 +47,10 @@ class MainActivity : UI<ActivityMainBinding>() {
         binding.fabNew.setOnClickListener {
             startActivity(Intent(this, AddTradingPeriodActivity::class.java))
         }
+        tradingPeriodAdapter.setOnClickListener {
+            startActivity(Intent(this, AddTradeActivity::class.java).apply {
+                putExtra(AddTradeActivity.TRADE_PERIOD_ID, it.uid)
+            })
+        }
     }
-
 }

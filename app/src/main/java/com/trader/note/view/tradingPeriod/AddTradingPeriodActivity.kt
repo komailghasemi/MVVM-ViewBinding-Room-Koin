@@ -54,10 +54,10 @@ class AddTradingPeriodActivity : UI<ActivityAddTradingPeriodBinding>() {
             val ii = binding.edtInitialInvestment.editText?.text!!.toString().toDouble()
             val mdd = binding.sldMdd.value.toInt()
             val mcl = binding.sldMcl.value.toInt()
-            val rpt = binding.sldMdd.value / binding.sldMcl.value
-            val nMax = (binding.sldMdd.value / rpt).toInt()
+//            val rpt = binding.sldMdd.value / binding.sldMcl.value
+//            val nMax = (binding.sldMdd.value / rpt).toInt()
 
-            vm.insert(TradingPeriod(name, ii, mdd, mcl, rpt, nMax)).invokeOnCompletion {
+            vm.insert(TradingPeriod(name, ii, mdd, mcl)).invokeOnCompletion {
                 if (it == null) {
                     binding.root.snackbar("با موفقیت ذخیره شد", Snackbar.LENGTH_LONG)
                         .setAction("بازگشت") {

@@ -1,25 +1,46 @@
 package com.trader.note.view.adapters
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.marcinorlowski.fonty.Fonty
+import com.trader.note.R
 import com.trader.note.databinding.ItemTradingPeriodBinding
+import com.trader.note.utils.toPersianString
+import com.trader.note.view.viewsModel.TradingPeriodModel
 
-class TradingPeriodAdapter : PagingDataAdapter<String, TradingPeriodAdapter.ViewHolder>(diffCallback) {
+
+class TradingPeriodAdapter :
+    PagingDataAdapter<TradingPeriodModel, TradingPeriodAdapter.ViewHolder>(diffCallback) {
+
+    private var listener: ((TradingPeriodModel) -> Unit)? = null
+
+    fun setOnClickListener(listener: (TradingPeriodModel) -> Unit) {
+        this.listener = listener
+    }
 
     class ViewHolder(val binding: ItemTradingPeriodBinding) : RecyclerView.ViewHolder(binding.root)
 
     companion object {
-        val diffCallback = object : DiffUtil.ItemCallback<String>() {
-            override fun areItemsTheSame(oldItem: String, newItem: String): Boolean {
-                return oldItem == newItem // id
+        val diffCallback = object : DiffUtil.ItemCallback<TradingPeriodModel>() {
+            override fun areItemsTheSame(
+                oldItem: TradingPeriodModel,
+                newItem: TradingPeriodModel
+            ): Boolean {
+                return oldItem.uid == newItem.uid // id
             }
-            override fun areContentsTheSame(oldItem: String, newItem: String): Boolean {
-                return oldItem == newItem
+
+            override fun areContentsTheSame(
+                oldItem: TradingPeriodModel,
+                newItem: TradingPeriodModel
+            ): Boolean {
+                return oldItem.periodName == newItem.periodName
+                        && oldItem.startDate == newItem.startDate
+                        && oldItem.endDate == newItem.endDate
             }
         }
     }
@@ -27,7 +48,21 @@ class TradingPeriodAdapter : PagingDataAdapter<String, TradingPeriodAdapter.View
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.binding.txtName.text = "#${item?.replace(" " , "_")}"
+        holder.binding.txtName.text = "#${item?.periodName?.replace(" ", "_")}"
+
+        holder.binding.lytIsEnablePeriod.backgroundTintList = ColorStateList.valueOf(
+            holder.binding.root.context.getColor(
+                if (item?.endDate == null) R.color.green else R.color.red
+            )
+        )
+
+        holder.binding.txtStartDate.text = item?.startDate?.toPersianString()
+        holder.binding.txtEndDate.text = if (item?.endDate == null) "" else item.endDate.toPersianString()
+
+        holder.binding.root.setOnClickListener {
+            listener?.invoke(item!!)
+        }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

@@ -8,6 +8,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.trader.note.model.dao.TradingPeriodDao
+import com.trader.note.view.viewsModel.TradingPeriodModel
 import kotlinx.coroutines.flow.map
 
 
@@ -22,7 +23,7 @@ class MainViewModel(private val tradingPeriodDao: TradingPeriodDao) : ViewModel(
         tradingPeriodDao.getAll()
     }.flow.map {
         it.map { tp ->
-            tp.periodName
+            TradingPeriodModel(tp.uid!!, tp.periodName, tp.startDate, tp.endDate)
         }
     }.cachedIn(viewModelScope).asLiveData()
 

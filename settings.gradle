@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Trader Note"
 include ':app'
+include ':persiancalendar'
