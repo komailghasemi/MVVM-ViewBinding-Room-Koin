@@ -4,13 +4,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.internal.LinkedTreeMap
 import com.trader.note.api.Api
-import com.trader.note.urls.symbolPriceUrl
+import com.trader.note.model.dao.TradeDao
+import com.trader.note.model.tables.Trade
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class AddTradeViewModel(private val api: Api) : ViewModel() {
+class AddTradeViewModel(private val api: Api , private val tradeDao: TradeDao) : ViewModel() {
 
     private val _searchSymbols: MutableLiveData<List<String>> by lazy {
         MutableLiveData()
@@ -28,7 +29,6 @@ class AddTradeViewModel(private val api: Api) : ViewModel() {
     fun fetchSymbols() {
         viewModelScope.launch {
             val data = api.getSymbols()
-
             if (data == null) {
                 _searchSymbols.postValue(emptyList())
             } else {
@@ -44,6 +44,10 @@ class AddTradeViewModel(private val api: Api) : ViewModel() {
             val price = api.getPriceOf(id)
             _symbolPrice.postValue(price?.toString() ?: "0.0")
         }
+    }
+
+    fun insert(trade: Trade) = viewModelScope.launch(Dispatchers.IO) {
+        tradeDao.insert(trade)
     }
 
 

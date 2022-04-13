@@ -27,7 +27,6 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -50,12 +49,6 @@
                     android:textStyle="bold" />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:text="نام دوره معاملاتی"
-                android:textColor="@color/primary" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/edtName"
@@ -64,6 +57,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
+                android:hint="نام دوره معاملاتی"
                 app:errorEnabled="true">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -73,18 +67,14 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:text="@string/initQs1"
-                android:textColor="@color/primary" />
-
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/edtInitialInvestment"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:startIconDrawable="@drawable/ic_usd"
+                android:hint="@string/initQs1"
+                app:errorEnabled="true"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp">
 
@@ -161,17 +151,13 @@
                     android:textColor="@color/primary" />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:text="توضیحات"
-                android:textColor="@color/primary" />
+
 
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:hint="توضیحات"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp">
 
@@ -210,7 +196,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                android:text="درصد ریسک (R.P.T) در هر معامله برابر است با 10.0 درصد"
+                android:text="درصد ریسک در هر معامله (R.P.T) برابر است با 10.0 درصد"
                 android:textColor="@color/primary" />
 
             <androidx.appcompat.widget.AppCompatTextView

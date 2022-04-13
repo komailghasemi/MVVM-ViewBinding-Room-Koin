@@ -13,14 +13,17 @@ class Net(private val client: OkHttpClient, private val gson: Gson) {
         clazz: Class<T>
     ): T? {
         return withContext(Dispatchers.IO) {
-            val builder = Request.Builder()
-                .url(url)
-            val request = builder.build()
+            try {
+                val builder = Request.Builder()
+                    .url(url)
+                val request = builder.build()
 
-            val response = client.newCall(request).execute()
-            val data = response.body?.string()
-            if (response.code == 1) null else try {
-                gson.fromJson(data, clazz)
+                val response = client.newCall(request).execute()
+                val data = response.body?.string()
+                if (response.code == 1)
+                    null
+                else
+                    gson.fromJson(data, clazz)
             } catch (ex: Exception) {
                 null
             }

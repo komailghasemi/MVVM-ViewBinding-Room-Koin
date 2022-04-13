@@ -7,8 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.android.material.snackbar.Snackbar
 import com.marcinorlowski.fonty.Fonty
+import kotlinx.coroutines.flow.Flow
 import saman.zamani.persiandate.PersianDate
 import saman.zamani.persiandate.PersianDateFormat
 import java.text.DecimalFormat
@@ -72,3 +75,5 @@ fun EditText.currency() {
         }
     })
 }
+
+fun EditText.text() = text?.toString()?.replace(",", "")

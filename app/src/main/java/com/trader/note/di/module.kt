@@ -40,7 +40,7 @@ val viewModel = module {
         AddTreadingPeriodViewModel(get())
     }
     this.viewModel {
-        AddTradeViewModel(get())
+        AddTradeViewModel(get(),get())
     }
 }
 

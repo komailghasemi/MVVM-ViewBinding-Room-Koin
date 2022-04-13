@@ -6,7 +6,8 @@
         <entry key="..\:/Project/TradingTable/app/src/main/res/drawable/circle.xml" value="0.189" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/drawable/ic_add.xml" value="0.189" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/drawable/ic_note.xml" value="0.189" />
-        <entry key="..\:/Project/TradingTable/app/src/main/res/layout/activity_add_trade.xml" value="0.25" />
+        <entry key="..\:/Project/TradingTable/app/src/main/res/drawable/ic_usd.xml" value="0.189" />
+        <entry key="..\:/Project/TradingTable/app/src/main/res/layout/activity_add_trade.xml" value="0.33" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/layout/activity_add_trading_period.xml" value="0.25" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/layout/activity_main.xml" value="0.348731884057971" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/layout/activity_trade_init_info.xml" value="0.348731884057971" />
