@@ -4,10 +4,7 @@ package com.trader.note
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
 import com.marcinorlowski.fonty.Fonty
-import com.trader.note.di.adapter
-import com.trader.note.di.db
-import com.trader.note.di.network
-import com.trader.note.di.viewModel
+import com.trader.note.di.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -25,12 +22,13 @@ class App : Application() {
 
         startKoin {
             androidContext(this@App)
-            modules(network ,db , viewModel , adapter)
+            modules(network, db, viewModel, adapter, other)
         }
 
 
         AppCompatDelegate.setDefaultNightMode(
-            AppCompatDelegate.MODE_NIGHT_NO)
+            AppCompatDelegate.MODE_NIGHT_NO
+        )
 
     }
 }

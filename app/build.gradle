@@ -81,5 +81,7 @@ dependencies {
     // GSON -> Json Serialize and Deserialize
     implementation 'com.google.code.gson:gson:2.9.0'
 
+    // Table View
+    implementation 'com.github.evrencoskun:TableView:v0.8.9.4'
 
 }

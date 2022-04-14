@@ -11,6 +11,9 @@ interface TradingPeriodDao {
     @Query("SELECT * FROM trading_period order by end_date")
     fun getAll(): PagingSource<Int, TradingPeriod>
 
+    @Query("SELECT * FROM trading_period where uid = :id")
+    fun getById(id: Int): TradingPeriod
+
     @Insert
-    fun insert(tp : TradingPeriod)
+    fun insert(tp: TradingPeriod)
 }

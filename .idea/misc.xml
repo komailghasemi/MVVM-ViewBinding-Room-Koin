@@ -5,15 +5,21 @@
       <map>
         <entry key="..\:/Project/TradingTable/app/src/main/res/drawable/circle.xml" value="0.189" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/drawable/ic_add.xml" value="0.189" />
+        <entry key="..\:/Project/TradingTable/app/src/main/res/drawable/ic_add_tp.xml" value="0.204" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/drawable/ic_note.xml" value="0.189" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/drawable/ic_usd.xml" value="0.189" />
-        <entry key="..\:/Project/TradingTable/app/src/main/res/layout/activity_add_trade.xml" value="0.33" />
+        <entry key="..\:/Project/TradingTable/app/src/main/res/layout/activity_add_trade.xml" value="0.25" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/layout/activity_add_trading_period.xml" value="0.25" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/layout/activity_main.xml" value="0.348731884057971" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/layout/activity_trade_init_info.xml" value="0.348731884057971" />
+        <entry key="..\:/Project/TradingTable/app/src/main/res/layout/activity_trades.xml" value="0.25" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/layout/item_trading_period.xml" value="0.36666666666666664" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/layout/item_trading_priod.xml" value="0.36666666666666664" />
         <entry key="..\:/Project/TradingTable/app/src/main/res/layout/list_item.xml" value="0.36666666666666664" />
+        <entry key="..\:/Project/TradingTable/app/src/main/res/layout/table_view_cell_layout.xml" value="0.36666666666666664" />
+        <entry key="..\:/Project/TradingTable/app/src/main/res/layout/table_view_column_header_layout.xml" value="0.36666666666666664" />
+        <entry key="..\:/Project/TradingTable/app/src/main/res/layout/table_view_corner_layout.xml" value="0.36666666666666664" />
+        <entry key="..\:/Project/TradingTable/app/src/main/res/layout/table_view_row_header_layout.xml" value="0.36666666666666664" />
         <entry key="..\:/Project/TradingTable/persiancalendar/src/main/res/layout/calendar_months.xml" value="0.36666666666666664" />
         <entry key="..\:/Project/TradingTable/persiancalendar/src/main/res/layout/calendar_year.xml" value="0.36666666666666664" />
         <entry key="..\:/Project/TradingTable/persiancalendar/src/main/res/layout/picker_actions.xml" value="0.36666666666666664" />

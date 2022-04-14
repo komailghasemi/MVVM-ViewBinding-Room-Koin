@@ -14,6 +14,7 @@ import com.marcinorlowski.fonty.Fonty
 import kotlinx.coroutines.flow.Flow
 import saman.zamani.persiandate.PersianDate
 import saman.zamani.persiandate.PersianDateFormat
+import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.util.*
 
@@ -77,3 +78,17 @@ fun EditText.currency() {
 }
 
 fun EditText.text() = text?.toString()?.replace(",", "")
+
+fun Double.round(): BigDecimal {
+    log(this)
+    val num = this.toBigDecimal().toString().split(".")
+    val number = num[1]
+    for (i in number.indices) {
+        if (number[i] != '0') {
+            if (i < number.length - 1) {
+                return (num[0] + "." + number.take(i + 2)).toBigDecimal()
+            }
+        }
+    }
+    return this.toBigDecimal()
+}

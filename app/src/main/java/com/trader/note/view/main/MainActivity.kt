@@ -8,6 +8,7 @@ import com.trader.note.databinding.ActivityMainBinding
 import com.trader.note.view.UI
 import com.trader.note.view.adapters.TradingPeriodAdapter
 import com.trader.note.view.trade.AddTradeActivity
+import com.trader.note.view.trade.TradesActivity
 import com.trader.note.view.tradingPeriod.AddTradingPeriodActivity
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -48,8 +49,8 @@ class MainActivity : UI<ActivityMainBinding>() {
             startActivity(Intent(this, AddTradingPeriodActivity::class.java))
         }
         tradingPeriodAdapter.setOnClickListener {
-            startActivity(Intent(this, AddTradeActivity::class.java).apply {
-                putExtra(AddTradeActivity.TRADE_PERIOD_ID, it.uid)
+            startActivity(Intent(this, TradesActivity::class.java).apply {
+                putExtra(TradesActivity.TRADE_PERIOD_ID, it.uid)
             })
         }
     }

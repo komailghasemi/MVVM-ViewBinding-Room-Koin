@@ -5,7 +5,10 @@ import android.text.TextWatcher
 import android.widget.EditText
 import com.google.android.material.slider.Slider
 
-fun EditText.addTextChangedEvent(onChanged: (String?) -> Unit) {
+fun EditText.addTextChangedEvent(
+    onChanged: (String?) -> Unit,
+    deleteCommaOfCurrency: Boolean = true
+) {
     addTextChangedListener(object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
         }
@@ -15,7 +18,10 @@ fun EditText.addTextChangedEvent(onChanged: (String?) -> Unit) {
         }
 
         override fun afterTextChanged(s: Editable?) {
-            onChanged(s?.toString())
+            if (deleteCommaOfCurrency)
+                onChanged(s?.toString()?.replace(",", ""))
+            else
+                onChanged(s?.toString())
         }
     })
 }

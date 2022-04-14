@@ -20,10 +20,6 @@ class AddTreadingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao)
     val nameError: LiveData<String>
         get() = _nameError
 
-    fun nameEvent(name: String?) {
-        _name.value = name
-    }
-
     private val _initialInvestment: MutableLiveData<Double> by lazy {
         MutableLiveData<Double>()
     }
@@ -33,31 +29,17 @@ class AddTreadingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao)
     val initialInvestmentError: LiveData<String>
         get() = _initialInvestmentError
 
-    fun initialInvestmentEvent(name: String?) {
-        _initialInvestment.value = name?.toDouble()
+    private val _mdd: MutableLiveData<Int> by lazy {
+        MutableLiveData<Int>()
     }
-
-    private val _mdd: MutableLiveData<Float> by lazy {
-        MutableLiveData<Float>()
-    }
-    val mdd: LiveData<Float>
+    val mdd: LiveData<Int>
         get() = _mdd
 
-    fun mddEvent(value: Float) {
-        _mdd.value = value
-        calculate()
+    private val _mcl: MutableLiveData<Int> by lazy {
+        MutableLiveData<Int>()
     }
-
-    private val _mcl: MutableLiveData<Float> by lazy {
-        MutableLiveData<Float>()
-    }
-    val mcl: LiveData<Float>
+    val mcl: LiveData<Int>
         get() = _mcl
-
-    fun mclEvent(value: Float) {
-        _mcl.value = value
-        calculate()
-    }
 
     private val _rpt: MutableLiveData<Float> by lazy {
         MutableLiveData<Float>()
@@ -71,24 +53,42 @@ class AddTreadingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao)
     val nMax: LiveData<Int>
         get() = _nMax
 
-    private fun calculate() {
-        _rpt.value = (_mdd.value ?: 20f) / (_mcl.value ?: 2f)
-        _nMax.value = ((_mdd.value ?: 20f) / (rpt.value ?: 10.0f)).toInt()
-    }
-
-
     private val _onSaved: MutableLiveData<Unit> by lazy {
         MutableLiveData<Unit>()
     }
     val onSaved: LiveData<Unit>
         get() = _onSaved
 
+    fun nameEvent(name: String?) {
+        _name.value = name
+    }
+
+    fun initialInvestmentEvent(name: String?) {
+        _initialInvestment.value = name?.toDoubleOrNull()
+    }
+
+    fun mddEvent(value: Float) {
+        _mdd.value = value.toInt()
+        calculate()
+    }
+
+    fun mclEvent(value: Float) {
+        _mcl.value = value.toInt()
+        calculate()
+    }
+
+    private fun calculate() {
+        _rpt.value = (_mdd.value ?: 20).toFloat() / (_mcl.value ?: 2)
+        _nMax.value = ((_mdd.value ?: 20) / (rpt.value ?: 10.0f)).toInt()
+    }
+
+
     fun onSaveClicked() {
         if (validate()) {
             val name = _name.value!!
             val ii = _initialInvestment.value!!
-            val mdd = (_mdd.value ?: 20f).toInt()
-            val mcl = (_mcl.value ?: 2f).toInt()
+            val mdd = _mdd.value ?: 20
+            val mcl = _mcl.value ?: 2
             insert(TradingPeriod(name, ii, mdd, mcl)).invokeOnCompletion {
                 if (it == null)
                     _onSaved.postValue(Unit)

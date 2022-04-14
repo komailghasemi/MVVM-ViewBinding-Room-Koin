@@ -30,7 +30,8 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:contentDescription="درج جدید"
-        android:src="@drawable/ic_add"
+        app:srcCompat="@drawable/ic_add"
+        app:tint="@color/white"
         android:backgroundTint="@color/accent" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

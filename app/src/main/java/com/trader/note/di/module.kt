@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import com.google.gson.GsonBuilder
 import com.trader.note.api.Api
+import com.trader.note.coins.Coin
 import com.trader.note.model.db.AppDatabase
 import com.trader.note.network.Net
 import com.trader.note.view.adapters.SymbolAdapter
@@ -40,10 +41,9 @@ val viewModel = module {
         AddTreadingPeriodViewModel(get())
     }
     this.viewModel {
-        AddTradeViewModel(get(),get())
+        AddTradeViewModel(get(), get(), get())
     }
 }
-
 
 val adapter = module {
     this.factory {
@@ -65,4 +65,10 @@ val db = module {
     this.single { providesDatabase(androidApplication()) }
     this.single { get<AppDatabase>().tradingPeriodDao() }
     this.single { get<AppDatabase>().tradeDao() }
+}
+
+val other = module {
+    this.factory {
+        Coin(get(), get())
+    }
 }

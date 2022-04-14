@@ -13,7 +13,8 @@ data class Trade(
     @ColumnInfo(name = "enter_price") val enterPrice: Double,
     @ColumnInfo(name = "sl") val sl: Double,
     @ColumnInfo(name = "price_target") val priceTarget: Double,
-    @ColumnInfo(name = "commission") val commission: Double,
+    @ColumnInfo(name = "buy_commission") val buy_commission: Double,
+    @ColumnInfo(name = "sell_commission") val sell_commission: Double,
     @ColumnInfo(name = "date_target") val dateTarget: Date? = null,
     @ColumnInfo(name = "sell_date") val sellDate: Date? = null, // close
     @ColumnInfo(name = "sell_price") val sellPrice: Double? = null, // close
