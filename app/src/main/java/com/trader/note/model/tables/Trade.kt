@@ -11,6 +11,7 @@ data class Trade(
     @ColumnInfo(name = "symbol") val symbol: String,
     @ColumnInfo(name = "enter_date") val enterDate: Date,
     @ColumnInfo(name = "enter_price") val enterPrice: Double,
+    @ColumnInfo(name = "volume") val volume: Double,
     @ColumnInfo(name = "sl") val sl: Double,
     @ColumnInfo(name = "price_target") val priceTarget: Double,
     @ColumnInfo(name = "buy_commission") val buy_commission: Double,

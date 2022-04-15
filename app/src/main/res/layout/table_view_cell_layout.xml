@@ -8,7 +8,7 @@
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/cellData"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:minWidth="72dp"
         android:layout_height="48dp"
         android:layout_gravity="center_vertical"
@@ -16,6 +16,6 @@
         android:maxLines="1"
         android:padding="2dp"
         android:text="Cell Data"
-        android:textColor="@color/darkPrimary"
+        android:textColor="@color/text"
         android:textSize="12sp" />
 </androidx.appcompat.widget.LinearLayoutCompat>

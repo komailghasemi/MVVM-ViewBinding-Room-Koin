@@ -9,12 +9,10 @@ import com.trader.note.urls.symbolPriceUrl
 class Api(private val net : Net) {
 
     suspend fun getSymbols() : Symbol? = net.get(searchSymbolUrl.replace(":symbol", ""), Symbol::class.java)
-    suspend fun getPriceOf(id : String) : Double?{
-        val data = net.get(
-            symbolPriceUrl.replace(":id", id),
+    suspend fun getPriceOf(vararg ids: String): LinkedTreeMap<String, LinkedTreeMap<String, Double>>? {
+        return net.get(
+            symbolPriceUrl.replace(":id", ids.joinToString(",")),
             Any::class.java
         ) as? LinkedTreeMap<String, LinkedTreeMap<String, Double>>
-
-        return data?.get(id)?.get("usd")
     }
 }

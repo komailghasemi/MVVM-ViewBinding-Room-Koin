@@ -22,156 +22,60 @@ class AddTradeViewModel(
     private val coin: Coin
 ) : ViewModel() {
 
-
     private lateinit var period: TradingPeriod
 
-    fun setPeriodId(id: Int) {
+    fun viewCreated(periodId: Int , tradeId : Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            period = tradingPeriodDao.getById(id)
+            period = tradingPeriodDao.getById(periodId)
+            _symbols.postValue(coin.getCoinList())
         }
     }
 
-    private val _symbols: MutableLiveData<List<String>> by lazy {
-        MutableLiveData()
-    }
-    val symbols: LiveData<List<String>>
-        get() = _symbols
-
-    private val _symbolError: MutableLiveData<String> by lazy {
-        MutableLiveData()
-    }
-    val symbolError: LiveData<String>
-        get() = _symbolError
-
-    private val _symbol: MutableLiveData<String> by lazy {
-        MutableLiveData()
-    }
-
-    private val _enterPrice: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
-    private val _enterPriceError: MutableLiveData<String> by lazy {
-        MutableLiveData<String>()
-    }
-    val enterPriceError: LiveData<String>
-        get() = _enterPriceError
-
-    private val _sl: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
-    private val _slError: MutableLiveData<String> by lazy {
-        MutableLiveData<String>()
-    }
-    val slError: LiveData<String>
-        get() = _slError
-
-    private val _targetPrice: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
-
-    private val _targetDate: MutableLiveData<Long> = MutableLiveData<Long>().apply {
-        value = System.currentTimeMillis()
-    }
-
-    val targetDate: LiveData<Long>
-        get() = _targetDate
-
-    private val _buyCommission: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
-    private val _sellCommission: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
-
-    private val _volume: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
-
-    private val _volumeError: MutableLiveData<String> by lazy {
-        MutableLiveData<String>()
-    }
-    val volumeError: LiveData<String>
-        get() = _volumeError
-
-    private val _volumeHelper: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
-    val volumeHelper: LiveData<Double>
-        get() = _volumeHelper
-
-    private val _rrr: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
-    val rrr: LiveData<Double>
-        get() = _rrr
-
-    private val _sarBeSar: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
-    val sarBeSar: LiveData<Double>
-        get() = _sarBeSar
-
-    private val _description: MutableLiveData<String> by lazy {
-        MutableLiveData<String>()
-    }
-
-    private val _onSaved: MutableLiveData<Unit> by lazy {
-        MutableLiveData<Unit>()
-    }
-    val onSaved: LiveData<Unit>
-        get() = _onSaved
-
-    fun descriptionEvent(desc: String?) {
+    fun setDescription(desc: String?) {
         _description.value = desc
     }
 
-    fun volumeEvent(vol: String?) {
+    fun setVolume(vol: String?) {
         _volume.value = vol?.toDoubleOrNull()
         calculateSarBeSar()
     }
 
-    fun buyCommissionEvent(bc: String?) {
+    fun setBuyCommission(bc: String?) {
         _buyCommission.value = bc?.toDoubleOrNull()
         calculateVolume()
         calculateSarBeSar()
     }
 
-    fun sellCommissionEvent(sc: String?) {
+    fun setSellCommission(sc: String?) {
         _sellCommission.value = sc?.toDoubleOrNull()
         calculateVolume()
         calculateSarBeSar()
     }
 
-    fun targetDateEvent(ms: Long) {
+    fun setTargetDate(ms: Long) {
         _targetDate.value = ms
     }
 
-    fun targetPriceEvent(targetPrice: String?) {
+    fun setTargetPrice(targetPrice: String?) {
         _targetPrice.value = targetPrice?.toDoubleOrNull()
         calculateRRR()
     }
 
-    fun slEvent(sl: String?) {
+    fun seSl(sl: String?) {
         _sl.value = sl?.toDoubleOrNull()
         calculateVolume()
         calculateRRR()
     }
 
-    fun enterPriceEvent(price: String?) {
+    fun setEnterPrice(price: String?) {
         _enterPrice.value = price?.toDoubleOrNull()
         calculateVolume()
         calculateRRR()
         calculateSarBeSar()
     }
 
-    fun symbolEvent(symbol: String?) {
+    fun setSymbol(symbol: String?) {
         _symbol.value = symbol
-    }
-
-    fun fetchSymbols() {
-        viewModelScope.launch {
-            _symbols.postValue(coin.getCoinList())
-        }
     }
 
     private fun calculateVolume() {
@@ -253,6 +157,7 @@ class AddTradeViewModel(
             val symbol = _symbol.value!!
             val enterDate = Date()
             val enterPrice = _enterPrice.value!!
+            val vol = _volume.value!!
             val sl = _sl.value!!
             val priceTarget = _targetPrice.value ?: enterPrice
             val buyCommission = _buyCommission.value ?: 0.0
@@ -266,6 +171,7 @@ class AddTradeViewModel(
                     symbol,
                     enterDate,
                     enterPrice,
+                    vol,
                     sl,
                     priceTarget,
                     buyCommission,
@@ -309,7 +215,120 @@ class AddTradeViewModel(
     }
 
 
-    fun insert(trade: Trade) = viewModelScope.launch(Dispatchers.IO) {
+    private fun insert(trade: Trade) = viewModelScope.launch(Dispatchers.IO) {
         tradeDao.insert(trade)
     }
+
+
+    // Models
+
+    private val _symbols: MutableLiveData<List<String>> by lazy {
+        MutableLiveData()
+    }
+    val symbols: LiveData<List<String>>
+        get() = _symbols
+
+    private val _symbolError: MutableLiveData<String> by lazy {
+        MutableLiveData()
+    }
+    val symbolError: LiveData<String>
+        get() = _symbolError
+
+    private val _symbol: MutableLiveData<String> by lazy {
+        MutableLiveData()
+    }
+    val symbol: LiveData<String>
+        get() = _symbol
+
+    private val _enterPrice: MutableLiveData<Double> by lazy {
+        MutableLiveData<Double>()
+    }
+    val enterPrice: LiveData<Double>
+        get() = _enterPrice
+
+    private val _enterPriceError: MutableLiveData<String> by lazy {
+        MutableLiveData<String>()
+    }
+    val enterPriceError: LiveData<String>
+        get() = _enterPriceError
+
+    private val _sl: MutableLiveData<Double> by lazy {
+        MutableLiveData<Double>()
+    }
+    val sl: LiveData<Double>
+        get() = _sl
+
+    private val _slError: MutableLiveData<String> by lazy {
+        MutableLiveData<String>()
+    }
+    val slError: LiveData<String>
+        get() = _slError
+
+    private val _targetPrice: MutableLiveData<Double> by lazy {
+        MutableLiveData<Double>()
+    }
+    val targetPrice: LiveData<Double>
+        get() = _targetPrice
+
+    private val _targetDate: MutableLiveData<Long> = MutableLiveData<Long>().apply {
+        value = System.currentTimeMillis()
+    }
+
+    val targetDate: LiveData<Long>
+        get() = _targetDate
+
+    private val _buyCommission: MutableLiveData<Double> by lazy {
+        MutableLiveData<Double>()
+    }
+    val buyCommission: LiveData<Double>
+        get() = _buyCommission
+
+    private val _sellCommission: MutableLiveData<Double> by lazy {
+        MutableLiveData<Double>()
+    }
+    val sellCommission: LiveData<Double>
+        get() = _sellCommission
+
+    private val _volume: MutableLiveData<Double> by lazy {
+        MutableLiveData<Double>()
+    }
+    val volume: LiveData<Double>
+        get() = _volume
+
+    private val _volumeError: MutableLiveData<String> by lazy {
+        MutableLiveData<String>()
+    }
+    val volumeError: LiveData<String>
+        get() = _volumeError
+
+    private val _volumeHelper: MutableLiveData<Double> by lazy {
+        MutableLiveData<Double>()
+    }
+    val volumeHelper: LiveData<Double>
+        get() = _volumeHelper
+
+    private val _rrr: MutableLiveData<Double> by lazy {
+        MutableLiveData<Double>()
+    }
+    val rrr: LiveData<Double>
+        get() = _rrr
+
+    private val _sarBeSar: MutableLiveData<Double> by lazy {
+        MutableLiveData<Double>()
+    }
+    val sarBeSar: LiveData<Double>
+        get() = _sarBeSar
+
+    private val _description: MutableLiveData<String> by lazy {
+        MutableLiveData<String>()
+    }
+    val description: LiveData<String>
+        get() = _description
+
+    private val _onSaved: MutableLiveData<Unit> by lazy {
+        MutableLiveData<Unit>()
+    }
+    val onSaved: LiveData<Unit>
+        get() = _onSaved
+    // Models
 }

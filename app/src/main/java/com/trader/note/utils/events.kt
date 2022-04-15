@@ -4,6 +4,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.EditText
 import com.google.android.material.slider.Slider
+import com.trader.note.R
 
 fun EditText.addTextChangedEvent(
     onChanged: (String?) -> Unit,
@@ -28,6 +29,6 @@ fun EditText.addTextChangedEvent(
 
 fun Slider.addSlideEvent(onSlide: (Float) -> Unit) {
     addOnChangeListener { _, value, _ ->
-        onSlide(value)
+            onSlide(value)
     }
 }

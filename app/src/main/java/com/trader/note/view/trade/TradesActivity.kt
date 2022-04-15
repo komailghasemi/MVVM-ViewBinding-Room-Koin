@@ -1,45 +1,76 @@
 package com.trader.note.view.trade
 
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import com.trader.note.databinding.ActivityTradesBinding
+import com.trader.note.utils.log
+import com.trader.note.utils.toCurrency
 import com.trader.note.view.UI
-import com.trader.note.view.adapters.tradeTable.Cell
-import com.trader.note.view.adapters.tradeTable.ColumnHeader
-import com.trader.note.view.adapters.tradeTable.RowHeader
 import com.trader.note.view.adapters.tradeTable.TradeTableAdapter
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class TradesActivity : UI<ActivityTradesBinding>() {
-    companion object{
+    companion object {
         const val TRADE_PERIOD_ID = "TRADE_PERIOD_ID"
     }
+
+    private val vm: TradesViewModel by viewModel()
+    private val tableAdapter: TradeTableAdapter by inject()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.setBindingInflater(ActivityTradesBinding.inflate(LayoutInflater.from(this)))
         super.onCreate(savedInstanceState)
-        val ii = 10
-        val bb = 10
-        val mRowHeaderList: MutableList<RowHeader?> = mutableListOf()
-        for (i in 0..bb){
-            mRowHeaderList.add(RowHeader("#$i"))
-        }
 
-        val mColumnHeaderList: MutableList<ColumnHeader?> = mutableListOf()
-        for (i in 0..ii){
-            mColumnHeaderList.add(ColumnHeader("تیتر $i"))
+        uiSettings()
+        observers()
+        vm.viewCreated(intent.getIntExtra(TRADE_PERIOD_ID, -1))
+        event()
+    }
+
+    private fun uiSettings() {
+        binding.table.setAdapter(tableAdapter)
+    }
+
+    private fun event() {
+        binding.fabNew.setOnClickListener {
+            startActivity(Intent(this, AddTradeActivity::class.java).apply {
+                putExtra(AddTradeActivity.TRADE_PERIOD_ID, vm.getPeriodId())
+            })
         }
-        val mCellList: MutableList<MutableList<Cell?>?> = mutableListOf()
-        for (i in 0..bb){
-            val list = mutableListOf<Cell?>()
-            for(j in 0..ii){
-                list.add(Cell("سلولسلولسلولسلولسلولسلولسلول $i $j"))
+        tableAdapter.setOnItemClickListener {
+            val row = tableAdapter.getRowHeaderItem(it)
+
+            startActivity(Intent(this, AddTradeActivity::class.java).apply {
+                putExtra(AddTradeActivity.TRADE_PERIOD_ID, vm.getPeriodId())
+                putExtra(AddTradeActivity.TRADE_ID, row?.tradeId)
+            })
+        }
+    }
+
+    private fun observers() {
+        vm.periodName.observe(this) {
+            binding.txtPeriodName.text = it
+        }
+        vm.initialInvestment.observe(this) {
+            binding.txtInitialInvestment.text = it.toString().toCurrency()
+        }
+        vm.nMax.observe(this) {
+            binding.txtNMax.text = it.toString()
+        }
+        vm.wr.observe(this) {
+            binding.txtWr.text = "$it%"
+        }
+        vm.trades.observe(this) { ld ->
+            ld.observe(this) {
+                tableAdapter.setAllItems(
+                    it.colHeaders.toList(),
+                    it.rowHeaders.toList(),
+                    it.cells.toList()
+                )
             }
-            mCellList.add(list)
         }
-        val adapter = TradeTableAdapter()
-        binding.contentContainer.setAdapter(adapter)
-        adapter.setAllItems(mColumnHeaderList, mRowHeaderList, mCellList)
-
-
     }
 }

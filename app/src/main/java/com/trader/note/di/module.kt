@@ -9,9 +9,11 @@ import com.trader.note.model.db.AppDatabase
 import com.trader.note.network.Net
 import com.trader.note.view.adapters.SymbolAdapter
 import com.trader.note.view.adapters.TradingPeriodAdapter
+import com.trader.note.view.adapters.tradeTable.TradeTableAdapter
 import com.trader.note.view.main.MainViewModel
 import com.trader.note.view.trade.AddTradeViewModel
-import com.trader.note.view.tradingPeriod.AddTreadingPeriodViewModel
+import com.trader.note.view.trade.TradesViewModel
+import com.trader.note.view.tradingPeriod.AddTradingPeriodViewModel
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -38,10 +40,13 @@ val viewModel = module {
         MainViewModel(get())
     }
     this.viewModel {
-        AddTreadingPeriodViewModel(get())
+        AddTradingPeriodViewModel(get())
     }
     this.viewModel {
         AddTradeViewModel(get(), get(), get())
+    }
+    this.viewModel {
+        TradesViewModel(get(), get() , get())
     }
 }
 
@@ -51,6 +56,9 @@ val adapter = module {
     }
     this.factory {
         SymbolAdapter(get())
+    }
+    this.factory {
+        TradeTableAdapter()
     }
 }
 

@@ -4,6 +4,7 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.trader.note.model.tables.TradingPeriod
 
 @Dao
@@ -15,5 +16,8 @@ interface TradingPeriodDao {
     fun getById(id: Int): TradingPeriod
 
     @Insert
-    fun insert(tp: TradingPeriod)
+    fun insert(tp: TradingPeriod): Long
+
+    @Update
+    fun update(tp: TradingPeriod)
 }

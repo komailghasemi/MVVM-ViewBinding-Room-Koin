@@ -1,8 +1,6 @@
 package com.trader.note.view.main
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
@@ -13,7 +11,11 @@ import kotlinx.coroutines.flow.map
 
 
 class MainViewModel(private val tradingPeriodDao: TradingPeriodDao) : ViewModel() {
-    fun getTradingPeriodList() = Pager(
+
+
+    //Models
+
+    val tradingPeriods = Pager(
         config = PagingConfig(
             pageSize = 25,
             enablePlaceholders = true,
@@ -26,6 +28,7 @@ class MainViewModel(private val tradingPeriodDao: TradingPeriodDao) : ViewModel(
             TradingPeriodModel(tp.uid!!, tp.periodName, tp.startDate, tp.endDate)
         }
     }.cachedIn(viewModelScope).asLiveData()
+    //Models
 
 
 }

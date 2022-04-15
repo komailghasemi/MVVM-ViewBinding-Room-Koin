@@ -7,7 +7,6 @@ import androidx.lifecycle.lifecycleScope
 import com.trader.note.databinding.ActivityMainBinding
 import com.trader.note.view.UI
 import com.trader.note.view.adapters.TradingPeriodAdapter
-import com.trader.note.view.trade.AddTradeActivity
 import com.trader.note.view.trade.TradesActivity
 import com.trader.note.view.tradingPeriod.AddTradingPeriodActivity
 import kotlinx.coroutines.launch
@@ -22,9 +21,13 @@ class MainActivity : UI<ActivityMainBinding>() {
         super.setBindingInflater(ActivityMainBinding.inflate(LayoutInflater.from(this)))
         super.onCreate(savedInstanceState)
 
-        recycler()
-        fetchDataSet()
+        uiSettings()
+        observers()
         event()
+    }
+
+    private fun uiSettings() {
+        recycler()
     }
 
     private fun recycler() {
@@ -36,8 +39,8 @@ class MainActivity : UI<ActivityMainBinding>() {
         binding.recycle.setAdapter(tradingPeriodAdapter)
     }
 
-    private fun fetchDataSet() {
-        vm.getTradingPeriodList().observe(this) {
+    private fun observers() {
+        vm.tradingPeriods.observe(this) {
             lifecycleScope.launch {
                 tradingPeriodAdapter.submitData(it)
             }

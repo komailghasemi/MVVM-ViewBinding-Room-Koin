@@ -7,7 +7,6 @@ import com.app.libarary.hide
 import com.app.libarary.show
 import com.google.android.material.snackbar.Snackbar
 import com.trader.note.databinding.ActivityAddTradeBinding
-import com.trader.note.model.tables.Trade
 import com.trader.note.utils.*
 import com.trader.note.view.UI
 import com.trader.note.view.adapters.SymbolAdapter
@@ -19,6 +18,7 @@ import java.util.*
 class AddTradeActivity : UI<ActivityAddTradeBinding>() {
     companion object {
         const val TRADE_PERIOD_ID = "TRADE_PERIOD_ID"
+        const val TRADE_ID = "TRADE_ID"
     }
 
     private val symbolAdapter: SymbolAdapter by inject()
@@ -29,15 +29,13 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
         super.setBindingInflater(ActivityAddTradeBinding.inflate(LayoutInflater.from(this)))
         super.onCreate(savedInstanceState)
 
-        vm.setPeriodId(intent.getIntExtra(TRADE_PERIOD_ID, -1))
-        initUi()
-        event()
+        uiSettings()
         observers()
-        fetch()
-        load()
+        vm.viewCreated(intent.getIntExtra(TRADE_PERIOD_ID, -1) , intent.getIntExtra(TRADE_ID, -1))
+        event()
     }
 
-    private fun initUi() {
+    private fun uiSettings() {
         binding.edtEnterPrice.editText?.currency()
         binding.edtSl.editText?.currency()
         binding.edtTargetPrice.editText?.currency()
@@ -47,14 +45,14 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
     }
 
     private fun event() {
-        binding.edtSymbol.editText?.addTextChangedEvent(vm::symbolEvent)
-        binding.edtEnterPrice.editText?.addTextChangedEvent(vm::enterPriceEvent)
-        binding.edtSl.editText?.addTextChangedEvent(vm::slEvent)
-        binding.edtTargetPrice.editText?.addTextChangedEvent(vm::targetPriceEvent)
-        binding.edtBuyCommission.editText?.addTextChangedEvent(vm::buyCommissionEvent)
-        binding.edtSellCommission.editText?.addTextChangedEvent(vm::sellCommissionEvent)
-        binding.edtVolume.editText?.addTextChangedEvent(vm::volumeEvent)
-        binding.edtDescription.editText?.addTextChangedEvent(vm::descriptionEvent)
+        binding.edtSymbol.editText?.addTextChangedEvent(vm::setSymbol)
+        binding.edtEnterPrice.editText?.addTextChangedEvent(vm::setEnterPrice)
+        binding.edtSl.editText?.addTextChangedEvent(vm::seSl)
+        binding.edtTargetPrice.editText?.addTextChangedEvent(vm::setTargetPrice)
+        binding.edtBuyCommission.editText?.addTextChangedEvent(vm::setBuyCommission)
+        binding.edtSellCommission.editText?.addTextChangedEvent(vm::setSellCommission)
+        binding.edtVolume.editText?.addTextChangedEvent(vm::setVolume)
+        binding.edtDescription.editText?.addTextChangedEvent(vm::setDescription)
         datePickerEvent()
         binding.btnBack.setOnClickListener { finish() }
         binding.btnSave.setOnClickListener { vm.onSaveClicked() }
@@ -62,6 +60,7 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
     }
 
     private fun observers() {
+
         vm.symbols.observe(this) {
             symbolAdapter.addAll(it)
             binding.inputSymbol.setAdapter(symbolAdapter)
@@ -69,14 +68,49 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
         vm.symbolError.observe(this) {
             binding.edtSymbol.error = it
         }
-        vm.volumeError.observe(this) {
-            binding.edtVolume.error = it
+
+        vm.symbol.observe(this) {
+            if (binding.edtSymbol.editText?.text.toString() != it)
+                binding.edtSymbol.editText?.setText(it)
+        }
+
+        vm.enterPrice.observe(this) {
+            if (binding.edtEnterPrice.editText?.text()?.toDoubleOrNull() != it)
+                binding.edtEnterPrice.editText?.setText(it.toString())
         }
         vm.enterPriceError.observe(this) {
             binding.edtEnterPrice.error = it
         }
+        vm.sl.observe(this) {
+            if (binding.edtSl.editText?.text()?.toDoubleOrNull() != it)
+                binding.edtSl.editText?.setText(it.toString())
+        }
         vm.slError.observe(this) {
             binding.edtSl.error = it
+        }
+        vm.targetPrice.observe(this) {
+            if (binding.edtTargetPrice.editText?.text()?.toDoubleOrNull() != it)
+                binding.edtTargetPrice.editText?.setText(it.toString())
+        }
+        vm.targetDate.observe(this) {
+            val date = Date(it).toPersianString()
+            if (binding.edtTargetDate.editText?.text.toString() != date)
+                binding.edtTargetDate.editText?.setText(date)
+        }
+        vm.buyCommission.observe(this) {
+            if (binding.edtBuyCommission.editText?.text()?.toDoubleOrNull() != it)
+                binding.edtBuyCommission.editText?.setText(it.toString())
+        }
+        vm.sellCommission.observe(this) {
+            if (binding.edtSellCommission.editText?.text()?.toDoubleOrNull() != it)
+                binding.edtSellCommission.editText?.setText(it.toString())
+        }
+        vm.volume.observe(this) {
+            if (binding.edtVolume.editText?.text()?.toDoubleOrNull() != it)
+                binding.edtVolume.editText?.setText(it.toString())
+        }
+        vm.volumeError.observe(this) {
+            binding.edtVolume.error = it
         }
         vm.volumeHelper.observe(this) {
             binding.txtCalculatedVolume.show()
@@ -98,9 +132,12 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
                     "قیمت سر به سر برابر است با ${it.toString().toCurrency()}"
             }
         }
-        vm.targetDate.observe(this) {
-            binding.edtTargetDate.editText?.setText(Date(it).toPersianString())
+
+        vm.description.observe(this) {
+            if (binding.edtDescription.editText?.text.toString() != it)
+                binding.edtDescription.editText?.setText(it)
         }
+
         vm.onSaved.observe(this) {
             binding.root.snackbar("با موفقیت ذخیره شد", Snackbar.LENGTH_LONG)
                 .setAction("بازگشت") {
@@ -121,19 +158,11 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
                 MaterialPickerOnPositiveButtonClickListener<Long?> {
                 override fun onPositiveButtonClick(selection: Long?) {
                     if (selection != null) {
-                        vm.targetDateEvent(selection)
+                        vm.setTargetDate(selection)
                     }
                 }
             })
             datePicker.show(supportFragmentManager, "aTag")
         }
-    }
-
-    private fun fetch() {
-        vm.fetchSymbols()
-    }
-
-    private fun load(){
-      //  binding.edtDescription.editText?.setText("تست")
     }
 }
