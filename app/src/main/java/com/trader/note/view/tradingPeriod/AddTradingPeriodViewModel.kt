@@ -6,19 +6,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.trader.note.model.dao.TradingPeriodDao
 import com.trader.note.model.tables.TradingPeriod
-import com.trader.note.utils.log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
 
 
 class AddTradingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao) : ViewModel() {
 
     fun viewCreated(periodId: Int = -1) {
         this.periodId = if (periodId == -1) null else periodId
-        loadPeriod().invokeOnCompletion {
-            _modelLoaded.postValue(Unit)
-        }
-
+        loadPeriod()
     }
 
     private fun loadPeriod() = viewModelScope.launch(Dispatchers.IO) {
@@ -29,9 +26,19 @@ class AddTradingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao) 
                 setInitialInvestment(tp.initialInvestment.toString())
                 setMdd(tp.MDD.toFloat())
                 setMcl(tp.MCL.toFloat())
+                setStartDate(tp.startDate)
+                if (tp.endDate == null)
+                    _state.value = "EDIT"
+                else
+                    _state.value = "CLOSED"
             }
-        }
+        } else
+            _state.postValue("NEW")
 
+    }
+
+    private fun setStartDate(date : Date){
+        startDate = date
     }
 
     fun setName(name: String?) {
@@ -66,13 +73,25 @@ class AddTradingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao) 
     }
 
 
-    fun onSaveClicked() {
+    fun onSaveClicked(close: Boolean) {
         if (validate()) {
             val name = _name.value!!
             val ii = _initialInvestment.value!!
             val mdd = _mdd.value ?: 20
             val mcl = _mcl.value ?: 2
-            upsert(TradingPeriod(name, ii, mdd, mcl, uid = periodId)).invokeOnCompletion {
+            var endDate = if (close) Date() else null
+
+            upsert(
+                TradingPeriod(
+                    name,
+                    ii,
+                    mdd,
+                    mcl,
+                    startDate,
+                    uid = periodId,
+                    endDate = endDate
+                )
+            ).invokeOnCompletion {
                 if (it == null)
                     _onSaved.postValue(Unit)
             }
@@ -93,21 +112,29 @@ class AddTradingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao) 
     }
 
     private fun upsert(tradingPeriod: TradingPeriod) = viewModelScope.launch(Dispatchers.IO) {
-        if (tradingPeriod.uid == null)
+        if (tradingPeriod.uid == null){
             periodId = tradingPeriodDao.insert(tradingPeriod).toInt()
+        }
+
         else
             tradingPeriodDao.update(tradingPeriod)
+
+        if (tradingPeriod.endDate == null)
+            _state.postValue("EDIT")
+        else
+            _state.postValue("CLOSED")
     }
 
     // Models
 
     private var periodId: Int? = null
+    private var startDate: Date = Date()
 
-    private val _modelLoaded: MutableLiveData<Unit> by lazy {
-        MutableLiveData<Unit>()
+    private val _state: MutableLiveData<String> by lazy {
+        MutableLiveData<String>()
     }
-    val modelLoaded: LiveData<Unit>
-        get() = _modelLoaded
+    val state: LiveData<String>
+        get() = _state
 
     private val _name: MutableLiveData<String> by lazy {
         MutableLiveData<String>()

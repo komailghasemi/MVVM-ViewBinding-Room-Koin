@@ -10,7 +10,8 @@ import com.trader.note.databinding.ActivityAddTradeBinding
 import com.trader.note.utils.*
 import com.trader.note.view.UI
 import com.trader.note.view.adapters.SymbolAdapter
-import com.xdev.arch.persiancalendar.datepicker.*
+import com.xdev.arch.persiancalendar.datepicker.MaterialDatePicker
+import com.xdev.arch.persiancalendar.datepicker.MaterialPickerOnPositiveButtonClickListener
 import org.koin.android.ext.android.inject
 import java.util.*
 
@@ -42,21 +43,23 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
         binding.edtBuyCommission.editText?.currency()
         binding.edtSellCommission.editText?.currency()
         binding.edtVolume.editText?.currency()
+        binding.edtSellPrice.editText?.currency()
     }
 
     private fun event() {
         binding.edtSymbol.editText?.addTextChangedEvent(vm::setSymbol)
         binding.edtEnterPrice.editText?.addTextChangedEvent(vm::setEnterPrice)
-        binding.edtSl.editText?.addTextChangedEvent(vm::seSl)
+        binding.edtSl.editText?.addTextChangedEvent(vm::setSl)
         binding.edtTargetPrice.editText?.addTextChangedEvent(vm::setTargetPrice)
         binding.edtBuyCommission.editText?.addTextChangedEvent(vm::setBuyCommission)
         binding.edtSellCommission.editText?.addTextChangedEvent(vm::setSellCommission)
         binding.edtVolume.editText?.addTextChangedEvent(vm::setVolume)
         binding.edtDescription.editText?.addTextChangedEvent(vm::setDescription)
-        datePickerEvent()
+        binding.edtSellPrice.editText?.addTextChangedEvent(vm::setSellPrice)
+        targetDatePickerEvent()
+        sellDatePickerEvent()
         binding.btnBack.setOnClickListener { finish() }
         binding.btnSave.setOnClickListener { vm.onSaveClicked() }
-
     }
 
     private fun observers() {
@@ -78,6 +81,11 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
             if (binding.edtEnterPrice.editText?.text()?.toDoubleOrNull() != it)
                 binding.edtEnterPrice.editText?.setText(it.toString())
         }
+
+        vm.sellPrice.observe(this) {
+            if (binding.edtSellPrice.editText?.text()?.toDoubleOrNull() != it)
+                binding.edtSellPrice.editText?.setText(it.toString())
+        }
         vm.enterPriceError.observe(this) {
             binding.edtEnterPrice.error = it
         }
@@ -96,6 +104,11 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
             val date = Date(it).toPersianString()
             if (binding.edtTargetDate.editText?.text.toString() != date)
                 binding.edtTargetDate.editText?.setText(date)
+        }
+        vm.sellDate.observe(this) {
+            val date = Date(it).toPersianString()
+            if (binding.edtSellDate.editText?.text.toString() != date)
+                binding.edtSellDate.editText?.setText(date)
         }
         vm.buyCommission.observe(this) {
             if (binding.edtBuyCommission.editText?.text()?.toDoubleOrNull() != it)
@@ -138,6 +151,10 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
                 binding.edtDescription.editText?.setText(it)
         }
 
+        vm.closed.observe(this){
+            binding.btnSave.hide()
+        }
+
         vm.onSaved.observe(this) {
             binding.root.snackbar("با موفقیت ذخیره شد", Snackbar.LENGTH_LONG)
                 .setAction("بازگشت") {
@@ -146,13 +163,9 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
         }
     }
 
-    private fun datePickerEvent() {
+    private fun targetDatePickerEvent() {
         binding.edtTargetDate.editText?.setOnClickListener {
-            val datePicker = MaterialDatePicker.Builder
-                .datePicker()
-                .setTitleText("تاریخ احتمالی برخورد با حد سود را انتخاب کنید")
-                .setTypeFace(Typeface.createFromAsset(assets, "fonts/regular.ttf"))
-                .setSelection(System.currentTimeMillis()).build()
+            val datePicker = getDatePicker("تاریخ احتمالی برخورد با حد سود را انتخاب کنید")
 
             datePicker.addOnPositiveButtonClickListener(object :
                 MaterialPickerOnPositiveButtonClickListener<Long?> {
@@ -165,4 +178,26 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
             datePicker.show(supportFragmentManager, "aTag")
         }
     }
+
+    private fun sellDatePickerEvent(){
+        binding.edtSellDate.editText?.setOnClickListener {
+            val datePicker = getDatePicker("تاریخ فروش را انتخاب کنید")
+
+            datePicker.addOnPositiveButtonClickListener(object :
+                MaterialPickerOnPositiveButtonClickListener<Long?> {
+                override fun onPositiveButtonClick(selection: Long?) {
+                    if (selection != null) {
+                        vm.setSellDate(selection)
+                    }
+                }
+            })
+            datePicker.show(supportFragmentManager, "aTag")
+        }
+    }
+
+    private fun getDatePicker(title : String) = MaterialDatePicker.Builder
+        .datePicker()
+        .setTitleText(title)
+        .setTypeFace(Typeface.createFromAsset(assets, "fonts/regular.ttf"))
+        .setSelection(System.currentTimeMillis()).build()
 }

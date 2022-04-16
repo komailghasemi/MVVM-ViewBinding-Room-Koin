@@ -4,11 +4,12 @@ package com.trader.note.view.trade
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import com.app.libarary.hide
 import com.trader.note.databinding.ActivityTradesBinding
-import com.trader.note.utils.log
 import com.trader.note.utils.toCurrency
 import com.trader.note.view.UI
 import com.trader.note.view.adapters.tradeTable.TradeTableAdapter
+import com.trader.note.view.tradingPeriod.AddTradingPeriodActivity
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -26,8 +27,12 @@ class TradesActivity : UI<ActivityTradesBinding>() {
 
         uiSettings()
         observers()
-        vm.viewCreated(intent.getIntExtra(TRADE_PERIOD_ID, -1))
         event()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        vm.viewCreated(intent.getIntExtra(TRADE_PERIOD_ID, -1))
     }
 
     private fun uiSettings() {
@@ -48,6 +53,12 @@ class TradesActivity : UI<ActivityTradesBinding>() {
                 putExtra(AddTradeActivity.TRADE_ID, row?.tradeId)
             })
         }
+
+        binding.lytBoard.setOnClickListener {
+            startActivity(Intent(this, AddTradingPeriodActivity::class.java).apply {
+                putExtra(AddTradingPeriodActivity.TRADE_PERIOD_ID, vm.getPeriodId())
+            })
+        }
     }
 
     private fun observers() {
@@ -63,8 +74,16 @@ class TradesActivity : UI<ActivityTradesBinding>() {
         vm.wr.observe(this) {
             binding.txtWr.text = "$it%"
         }
+        vm.targetInvestment.observe(this) {
+            binding.txtInvestment.text = "~${it.toString().toCurrency(2)}"
+
+        }
+        vm.closed.observe(this) {
+            binding.fabNew.hide()
+        }
         vm.trades.observe(this) { ld ->
             ld.observe(this) {
+                binding.prgLoading.hide()
                 tableAdapter.setAllItems(
                     it.colHeaders.toList(),
                     it.rowHeaders.toList(),

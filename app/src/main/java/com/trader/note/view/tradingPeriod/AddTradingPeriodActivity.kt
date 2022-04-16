@@ -2,6 +2,8 @@ package com.trader.note.view.tradingPeriod
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import com.app.libarary.hide
+import com.app.libarary.show
 import com.google.android.material.snackbar.Snackbar
 import com.trader.note.databinding.ActivityAddTradingPeriodBinding
 import com.trader.note.utils.*
@@ -14,6 +16,7 @@ class AddTradingPeriodActivity : UI<ActivityAddTradingPeriodBinding>() {
     companion object {
         const val TRADE_PERIOD_ID = "TRADE_PERIOD_ID"
     }
+
     private val vm: AddTradingPeriodViewModel by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,6 +26,7 @@ class AddTradingPeriodActivity : UI<ActivityAddTradingPeriodBinding>() {
         uiSettings()
         vm.viewCreated(intent.getIntExtra(TradesActivity.TRADE_PERIOD_ID, -1))
         observers()
+        event()
     }
 
     private fun uiSettings() {
@@ -35,7 +39,8 @@ class AddTradingPeriodActivity : UI<ActivityAddTradingPeriodBinding>() {
         binding.sldMdd.addSlideEvent(vm::setMdd)
         binding.sldMcl.addSlideEvent(vm::setMcl)
         binding.btnBack.setOnClickListener { finish() }
-        binding.btnSave.setOnClickListener { vm.onSaveClicked() }
+        binding.btnSave.setOnClickListener { vm.onSaveClicked(false) }
+        binding.btnClose.setOnClickListener { vm.onSaveClicked(true) }
     }
 
     private fun observers() {
@@ -84,14 +89,27 @@ class AddTradingPeriodActivity : UI<ActivityAddTradingPeriodBinding>() {
             binding.txtMaxN.text = "تعداد مجاز معاملات باز به صورت همزمان برابر است با $nMax"
         }
 
+        vm.state.observe(this) {
+            when (it) {
+                "EDIT" -> {
+                    binding.btnClose.show()
+                    binding.btnSave.show()
+                }
+                "CLOSED" -> {
+                    binding.btnSave.hide()
+                    binding.btnClose.hide()
+                }
+                "NEW" -> {
+                    binding.btnSave.show()
+                    binding.btnClose.hide()
+                }
+            }
+        }
         vm.onSaved.observe(this) {
             binding.root.snackbar("با موفقیت ذخیره شد", Snackbar.LENGTH_LONG)
                 .setAction("بازگشت") {
                     finish()
                 }.show()
-        }
-        vm.modelLoaded.observe(this) {
-            event()
         }
     }
 }

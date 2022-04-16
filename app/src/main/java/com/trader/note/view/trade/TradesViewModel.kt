@@ -43,6 +43,9 @@ class TradesViewModel(
                 val rpt = period.MDD / period.MCL
                 setNMax(period.MDD / rpt)
                 _trades.value = getTrades(period.uid!!)
+                if(period.endDate != null){
+                    _closed.value = Unit
+                }
             }
         }
     }
@@ -62,24 +65,31 @@ class TradesViewModel(
     fun getPeriodId() = period.uid
 
     // Models
+
+    private fun getHeaders() =
+        arrayOf(
+            ColumnHeader("نام نماد"),
+            ColumnHeader("وضعیت"),
+            ColumnHeader("قیمت"),
+            ColumnHeader("ورود"),
+            ColumnHeader("سود/زیان"),
+            ColumnHeader("تاریخ"),
+            ColumnHeader("حجم"),
+            ColumnHeader("حد ضرر"),
+            ColumnHeader("تارگت قیمتی"),
+            ColumnHeader("تارگت زمانی"),
+            ColumnHeader("ریسک به ریوارد"),
+            ColumnHeader("خروج"),
+            ColumnHeader("تاریخ خروج")
+        )
+
     private fun getTrades(id: Int) = tradeDao.getTradesByPeriodId(id).map {
         withContext(Dispatchers.IO) {
             val ttvm = TradesTableViewModel()
             var loss = 0
+            var targetCalculateInvestment = 0.0
             ttvm.colHeaders.addAll(
-                arrayOf(
-                    ColumnHeader("نام نماد"),
-                    ColumnHeader("وضعیت"),
-                    ColumnHeader("قیمت"),
-                    ColumnHeader("ورود"),
-                    ColumnHeader("سود/زیان"),
-                    ColumnHeader("تاریخ"),
-                    ColumnHeader("حجم"),
-                    ColumnHeader("حد ضرر"),
-                    ColumnHeader("تارگت قیمتی"),
-                    ColumnHeader("تارگت زمانی"),
-                    ColumnHeader("ریسک به ریوارد")
-                )
+                getHeaders()
             )
 
             val prices = api.getPriceOf(*it.map { t -> t.symbol }.toTypedArray())
@@ -88,19 +98,30 @@ class TradesViewModel(
                 val currentPrice = prices?.get(it[rowIndex].symbol)?.get("usd")
                 val enterPrice = it[rowIndex].enterPrice
                 var percent = 0.0
-                if (currentPrice != null) {
+                val closed = it[rowIndex].sellPrice != null
+                if (currentPrice != null && !closed) {
                     percent = ((currentPrice - enterPrice) / enterPrice) * 100
+                } else if (closed) {
+                    percent = ((it[rowIndex].sellPrice!! - enterPrice) / enterPrice) * 100
+
                 }
-                ttvm.rowHeaders.add(RowHeader("#${rowIndex + 1}", percent >= 0 , it[rowIndex].uid!!))
+
+                ttvm.rowHeaders.add(RowHeader("#${rowIndex + 1}", percent >= 0, it[rowIndex].uid!!))
 
                 if (percent < 0)
                     loss++
 
-                val rrr = (it[rowIndex].priceTarget - it[rowIndex].enterPrice) / (it[rowIndex].enterPrice - it[rowIndex].sl)
+                val state = if (!closed) {
+                    targetCalculateInvestment += it[rowIndex].priceTarget * it[rowIndex].volume
+                    "باز"
+                } else "بسته"
+
+                val rrr =
+                    (it[rowIndex].priceTarget - it[rowIndex].enterPrice) / (it[rowIndex].enterPrice - it[rowIndex].sl)
                 ttvm.cells.add(
                     mutableListOf(
                         Cell(it[rowIndex].symbol),
-                        Cell(if (it[rowIndex].sellPrice == null) "باز" else "بسته"),
+                        Cell(state),
                         Cell(currentPrice.toString().toCurrency() ?: "خطا در اتصال"),
                         Cell(enterPrice.toString().toCurrency()!!),
                         Cell("${"%.2f".format(percent)}%"),
@@ -109,11 +130,15 @@ class TradesViewModel(
                         Cell(it[rowIndex].sl.toString().toCurrency()!!),
                         Cell(it[rowIndex].priceTarget.toString().toCurrency()!!),
                         Cell(it[rowIndex].dateTarget?.toPersianString()!!),
-                        Cell("${"%.2f".format(rrr)}")
+                        Cell("${"%.2f".format(rrr)}"),
+                        Cell(it[rowIndex].sellPrice?.toString()?.toCurrency() ?: "-"),
+                        Cell(it[rowIndex].sellDate?.toPersianString() ?: "-")
                     )
                 )
             }
+
             _wr.postValue(((it.size - loss).toFloat() / it.size) * 100)
+            _targetInvestment.postValue(targetCalculateInvestment)
             ttvm
         }
     }.asLiveData(viewModelScope.coroutineContext)
@@ -148,6 +173,18 @@ class TradesViewModel(
     }
     val wr: LiveData<Float>
         get() = _wr
+
+    private val _closed: MutableLiveData<Unit> by lazy {
+        MutableLiveData<Unit>()
+    }
+    val closed: LiveData<Unit>
+        get() = _closed
+
+    private val _targetInvestment: MutableLiveData<Double> by lazy {
+        MutableLiveData<Double>()
+    }
+    val targetInvestment: LiveData<Double>
+        get() = _targetInvestment
     // Models
 
 

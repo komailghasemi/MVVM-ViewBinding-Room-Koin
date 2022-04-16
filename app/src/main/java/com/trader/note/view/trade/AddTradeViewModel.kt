@@ -22,12 +22,35 @@ class AddTradeViewModel(
     private val coin: Coin
 ) : ViewModel() {
 
-    private lateinit var period: TradingPeriod
 
-    fun viewCreated(periodId: Int , tradeId : Int) {
+    fun viewCreated(periodId: Int, tradeId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             period = tradingPeriodDao.getById(periodId)
             _symbols.postValue(coin.getCoinList())
+            this@AddTradeViewModel.tradeId = if (tradeId == -1) null else tradeId
+            loadTrade()
+        }
+    }
+
+    private fun loadTrade() {
+        if (tradeId != null) {
+            val trade = tradeDao.getById(tradeId!!)
+            viewModelScope.launch(Dispatchers.Main) {
+                setSymbol(trade.symbol)
+                setEnterPrice(trade.enterPrice.toString())
+                setSl(trade.sl.toString())
+                setTargetPrice(trade.priceTarget.toString())
+                setTargetDate(trade.dateTarget?.time ?: System.currentTimeMillis())
+                setBuyCommission(trade.buy_commission.toString())
+                setSellCommission(trade.sell_commission.toString())
+                setVolume(trade.volume.toString())
+                setDescription(trade.description)
+                setSellDate(trade.sellDate?.time)
+                setSellPrice(trade.sellPrice?.toString())
+                if (trade.sellPrice != null) {
+                    _closed.value = Unit
+                }
+            }
         }
     }
 
@@ -61,7 +84,7 @@ class AddTradeViewModel(
         calculateRRR()
     }
 
-    fun seSl(sl: String?) {
+    fun setSl(sl: String?) {
         _sl.value = sl?.toDoubleOrNull()
         calculateVolume()
         calculateRRR()
@@ -72,6 +95,16 @@ class AddTradeViewModel(
         calculateVolume()
         calculateRRR()
         calculateSarBeSar()
+    }
+
+    fun setSellPrice(price: String?) {
+        if (price != null)
+            _sellPrice.value = price.toDouble()
+    }
+
+    fun setSellDate(ms: Long?) {
+        if (ms != null)
+            _sellDate.value = ms!!
     }
 
     fun setSymbol(symbol: String?) {
@@ -165,7 +198,14 @@ class AddTradeViewModel(
             val dateTarget = Date(_targetDate.value ?: System.currentTimeMillis())
             val description = _description.value
 
-            insert(
+            val closePrice = _sellPrice.value
+            if (closePrice != null) {
+                _closed.value = Unit
+            }
+            val closeDate = if (closePrice != null) {
+                Date(_sellDate.value ?: System.currentTimeMillis())
+            } else null
+            upsert(
                 Trade(
                     period.uid!!,
                     symbol,
@@ -177,14 +217,22 @@ class AddTradeViewModel(
                     buyCommission,
                     sellCommission,
                     dateTarget,
-                    description = description
+                    sellDate = closeDate,
+                    sellPrice = closePrice,
+                    description = description,
+                    uid = tradeId
                 )
             ).invokeOnCompletion {
-                if (it == null)
+                if (it == null) {
+                    if (closePrice != null)
+                        _closed.postValue(Unit)
                     _onSaved.postValue(Unit)
+                }
+
             }
         }
     }
+
 
     private fun validate(): Boolean {
         if (_symbol.value.isNullOrEmpty()) {
@@ -215,12 +263,18 @@ class AddTradeViewModel(
     }
 
 
-    private fun insert(trade: Trade) = viewModelScope.launch(Dispatchers.IO) {
-        tradeDao.insert(trade)
+    private fun upsert(trade: Trade) = viewModelScope.launch(Dispatchers.IO) {
+
+        if (trade.uid == null) {
+            tradeId = tradeDao.insert(trade).toInt()
+        } else
+            tradeDao.update(trade)
     }
 
 
     // Models
+    private lateinit var period: TradingPeriod
+    private var tradeId: Int? = null
 
     private val _symbols: MutableLiveData<List<String>> by lazy {
         MutableLiveData()
@@ -324,6 +378,26 @@ class AddTradeViewModel(
     }
     val description: LiveData<String>
         get() = _description
+
+
+    private val _sellPrice: MutableLiveData<Double> by lazy {
+        MutableLiveData<Double>()
+    }
+    val sellPrice: LiveData<Double>
+        get() = _sellPrice
+
+    private val _closed: MutableLiveData<Unit> by lazy {
+        MutableLiveData<Unit>()
+    }
+    val closed: LiveData<Unit>
+        get() = _closed
+
+    private val _sellDate: MutableLiveData<Long> = MutableLiveData<Long>().apply {
+        value = System.currentTimeMillis()
+    }
+
+    val sellDate: LiveData<Long>
+        get() = _sellDate
 
     private val _onSaved: MutableLiveData<Unit> by lazy {
         MutableLiveData<Unit>()

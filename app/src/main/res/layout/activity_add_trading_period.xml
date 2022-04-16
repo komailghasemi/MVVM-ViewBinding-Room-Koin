@@ -237,13 +237,24 @@
             app:icon="@drawable/ic_back" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnClose"
+            style="@style/Widget.MaterialComponents.Button.Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="6dp"
+            android:backgroundTint="@color/red"
+            android:text="بستن"
+            app:icon="@drawable/ic_close" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSave"
             style="@style/Widget.MaterialComponents.Button.Icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:layout_marginEnd="12dp"
-            android:text="ذخیره دوره"
+            android:text="ذخیره"
             app:icon="@drawable/ic_add_tp" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 

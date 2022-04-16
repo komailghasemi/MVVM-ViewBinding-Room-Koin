@@ -55,9 +55,7 @@ class TradingPeriodAdapter :
                 if (item?.endDate == null) R.color.green else R.color.red
             )
         )
-
-        holder.binding.txtStartDate.text = item?.startDate?.toPersianString()
-        holder.binding.txtEndDate.text = if (item?.endDate == null) "" else item.endDate.toPersianString()
+        holder.binding.txtDate.text = item?.startDate?.toPersianString() + if (item?.endDate == null) "" else " - ${item.endDate.toPersianString()}"
 
         holder.binding.root.setOnClickListener {
             listener?.invoke(item!!)

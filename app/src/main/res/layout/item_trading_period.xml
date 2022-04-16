@@ -47,26 +47,12 @@
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
-            <androidx.appcompat.widget.LinearLayoutCompat
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/txtDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
+                android:gravity="end"/>
 
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/txtEndDate"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.5"
-                    android:gravity="end"/>
-
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/txtStartDate"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.5"
-                    android:gravity="end"/>
-            </androidx.appcompat.widget.LinearLayoutCompat>
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 

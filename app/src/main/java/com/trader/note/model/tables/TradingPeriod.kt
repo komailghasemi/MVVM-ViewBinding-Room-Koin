@@ -11,7 +11,7 @@ data class TradingPeriod(
     @ColumnInfo(name = "initial_investment") val initialInvestment: Double,
     @ColumnInfo(name = "mdd") val MDD: Int,
     @ColumnInfo(name = "mcl") val MCL: Int,
-    @ColumnInfo(name = "start_date") val startDate: Date = Date(),
+    @ColumnInfo(name = "start_date") val startDate: Date,
     @ColumnInfo(name = "end_date") val endDate: Date? = null,
     @ColumnInfo(name = "description") val description: String? = null,
     @PrimaryKey(autoGenerate = true)
