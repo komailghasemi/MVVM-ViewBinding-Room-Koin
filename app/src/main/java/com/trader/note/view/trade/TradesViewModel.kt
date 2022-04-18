@@ -4,6 +4,8 @@ import androidx.lifecycle.*
 import com.trader.note.api.Api
 import com.trader.note.model.dao.TradeDao
 import com.trader.note.model.dao.TradingPeriodDao
+import com.trader.note.model.repo.TradeRepository
+import com.trader.note.model.repo.TradingPeriodRepository
 import com.trader.note.model.tables.TradingPeriod
 import com.trader.note.utils.toCurrency
 import com.trader.note.utils.toPersianString
@@ -23,46 +25,30 @@ class TradesTableViewModel {
 }
 
 class TradesViewModel(
-    private val tradeDao: TradeDao,
-    private val tradingPeriodDao: TradingPeriodDao,
+    private var periodId: Int,
+    private val tradeRepository: TradeRepository,
+    private val tradingPeriodRepository: TradingPeriodRepository,
     private val api: Api
 ) : ViewModel() {
 
-    private lateinit var period: TradingPeriod
 
-    fun viewCreated(periodId: Int) {
-        loadPeriod(if (periodId == -1) null else periodId)
-    }
-
-    private fun loadPeriod(periodId: Int?) = viewModelScope.launch(Dispatchers.IO) {
-        if (periodId != null) {
-            period = tradingPeriodDao.getById(periodId)
-            launch(Dispatchers.Main) {
-                setName(period.periodName)
-                setInitialInvestment(period.initialInvestment)
-                val rpt = period.MDD / period.MCL
-                setNMax(period.MDD / rpt)
-                _trades.value = getTrades(period.uid!!)
-                if(period.endDate != null){
-                    _closed.value = Unit
+    init {
+        viewModelScope.launch {
+            tradingPeriodRepository.getById(periodId).collect { tp ->
+                if(tp != null){
+                    _nMax.value = tp.MDD / (tp.MDD / tp.MCL)
+                    _periodName.value = tp.periodName
+                    _initialInvestment.value = tp.initialInvestment
+                    if (tp.endDate != null) {
+                        _closed.value = Unit
+                    }
                 }
             }
         }
     }
 
-    private fun setNMax(nMax: Int?) {
-        _nMax.value = nMax
-    }
 
-    private fun setName(name: String?) {
-        _periodName.value = name
-    }
-
-    private fun setInitialInvestment(ii: Double?) {
-        _initialInvestment.value = ii
-    }
-
-    fun getPeriodId() = period.uid
+    fun getPeriodId() = periodId
 
     // Models
 
@@ -83,15 +69,12 @@ class TradesViewModel(
             ColumnHeader("تاریخ خروج")
         )
 
-    private fun getTrades(id: Int) = tradeDao.getTradesByPeriodId(id).map {
+    fun getTrades() = tradeRepository.getListByPeriodId(periodId).map {
         withContext(Dispatchers.IO) {
             val ttvm = TradesTableViewModel()
             var loss = 0
             var targetCalculateInvestment = 0.0
-            ttvm.colHeaders.addAll(
-                getHeaders()
-            )
-
+            ttvm.colHeaders.addAll(getHeaders())
             val prices = api.getPriceOf(*it.map { t -> t.symbol }.toTypedArray())
 
             for (rowIndex in it.indices) {
@@ -103,9 +86,7 @@ class TradesViewModel(
                     percent = ((currentPrice - enterPrice) / enterPrice) * 100
                 } else if (closed) {
                     percent = ((it[rowIndex].sellPrice!! - enterPrice) / enterPrice) * 100
-
                 }
-
                 ttvm.rowHeaders.add(RowHeader("#${rowIndex + 1}", percent >= 0, it[rowIndex].uid!!))
 
                 if (percent < 0)
@@ -143,11 +124,6 @@ class TradesViewModel(
         }
     }.asLiveData(viewModelScope.coroutineContext)
 
-    private val _trades: MutableLiveData<LiveData<TradesTableViewModel>> by lazy {
-        MutableLiveData<LiveData<TradesTableViewModel>>()
-    }
-    val trades: LiveData<LiveData<TradesTableViewModel>>
-        get() = _trades
 
     private val _periodName: MutableLiveData<String> by lazy {
         MutableLiveData<String>()
@@ -166,7 +142,6 @@ class TradesViewModel(
     }
     val nMax: LiveData<Int>
         get() = _nMax
-
 
     private val _wr: MutableLiveData<Float> by lazy {
         MutableLiveData<Float>()

@@ -9,7 +9,8 @@ import com.trader.note.databinding.ActivityAddTradingPeriodBinding
 import com.trader.note.utils.*
 import com.trader.note.view.UI
 import com.trader.note.view.trade.TradesActivity
-import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 class AddTradingPeriodActivity : UI<ActivityAddTradingPeriodBinding>() {
 
@@ -17,14 +18,15 @@ class AddTradingPeriodActivity : UI<ActivityAddTradingPeriodBinding>() {
         const val TRADE_PERIOD_ID = "TRADE_PERIOD_ID"
     }
 
-    private val vm: AddTradingPeriodViewModel by inject()
+    private val vm: AddTradingPeriodViewModel by viewModel {
+        parametersOf(intent.getIntExtra(TradesActivity.TRADE_PERIOD_ID, -1))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.setBindingInflater(ActivityAddTradingPeriodBinding.inflate(LayoutInflater.from(this)))
         super.onCreate(savedInstanceState)
 
         uiSettings()
-        vm.viewCreated(intent.getIntExtra(TradesActivity.TRADE_PERIOD_ID, -1))
         observers()
         event()
     }
@@ -36,6 +38,7 @@ class AddTradingPeriodActivity : UI<ActivityAddTradingPeriodBinding>() {
     private fun event() {
         binding.edtName.editText?.addTextChangedEvent(vm::setName)
         binding.edtInitialInvestment.editText?.addTextChangedEvent(vm::setInitialInvestment)
+        binding.edtDescription.editText?.addTextChangedEvent(vm::setDescription)
         binding.sldMdd.addSlideEvent(vm::setMdd)
         binding.sldMcl.addSlideEvent(vm::setMcl)
         binding.btnBack.setOnClickListener { finish() }
@@ -54,6 +57,10 @@ class AddTradingPeriodActivity : UI<ActivityAddTradingPeriodBinding>() {
             if (binding.edtInitialInvestment.editText?.text()?.toDoubleOrNull() != it)
                 binding.edtInitialInvestment.editText?.setText(it.toString())
         }
+        vm.description.observe(this) {
+            if (binding.edtDescription.editText?.text?.toString() != it)
+                binding.edtDescription.editText?.setText(it?.toString())
+        }
 
         vm.mdd.observe(this) { value ->
             if (binding.sldMdd.value.toInt() != value) {
@@ -65,11 +72,10 @@ class AddTradingPeriodActivity : UI<ActivityAddTradingPeriodBinding>() {
         vm.mcl.observe(this) { value ->
             if (binding.sldMcl.value.toInt() != value) {
                 binding.sldMcl.value = value.toFloat()
-
-                if (binding.sldMdd.value < value)
-                    binding.sldMdd.value = value.toFloat()
-                binding.sldMdd.valueFrom = value.toFloat()
             }
+            if (binding.sldMdd.value < value)
+                binding.sldMdd.value = value.toFloat()
+            binding.sldMdd.valueFrom = value.toFloat()
             binding.txtMcl.text = value.toString()
         }
 
@@ -91,15 +97,15 @@ class AddTradingPeriodActivity : UI<ActivityAddTradingPeriodBinding>() {
 
         vm.state.observe(this) {
             when (it) {
-                "EDIT" -> {
+                State.Edit -> {
                     binding.btnClose.show()
                     binding.btnSave.show()
                 }
-                "CLOSED" -> {
+                State.Closed -> {
                     binding.btnSave.hide()
                     binding.btnClose.hide()
                 }
-                "NEW" -> {
+                State.New -> {
                     binding.btnSave.show()
                     binding.btnClose.hide()
                 }

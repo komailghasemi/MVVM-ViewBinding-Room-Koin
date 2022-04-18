@@ -12,13 +12,16 @@ import com.trader.note.view.adapters.tradeTable.TradeTableAdapter
 import com.trader.note.view.tradingPeriod.AddTradingPeriodActivity
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 class TradesActivity : UI<ActivityTradesBinding>() {
     companion object {
         const val TRADE_PERIOD_ID = "TRADE_PERIOD_ID"
     }
 
-    private val vm: TradesViewModel by viewModel()
+    private val vm: TradesViewModel by viewModel {
+        parametersOf(intent.getIntExtra(TRADE_PERIOD_ID, -1))
+    }
     private val tableAdapter: TradeTableAdapter by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,11 +31,6 @@ class TradesActivity : UI<ActivityTradesBinding>() {
         uiSettings()
         observers()
         event()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        vm.viewCreated(intent.getIntExtra(TRADE_PERIOD_ID, -1))
     }
 
     private fun uiSettings() {
@@ -81,15 +79,13 @@ class TradesActivity : UI<ActivityTradesBinding>() {
         vm.closed.observe(this) {
             binding.fabNew.hide()
         }
-        vm.trades.observe(this) { ld ->
-            ld.observe(this) {
-                binding.prgLoading.hide()
-                tableAdapter.setAllItems(
-                    it.colHeaders.toList(),
-                    it.rowHeaders.toList(),
-                    it.cells.toList()
-                )
-            }
+        vm.getTrades().observe(this) {
+            binding.prgLoading.hide()
+            tableAdapter.setAllItems(
+                it.colHeaders.toList(),
+                it.rowHeaders.toList(),
+                it.cells.toList()
+            )
         }
     }
 }

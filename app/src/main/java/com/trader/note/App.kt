@@ -22,7 +22,7 @@ class App : Application() {
 
         startKoin {
             androidContext(this@App)
-            modules(network, db, viewModel, adapter, other)
+            modules(network, db, viewModel, repo, adapter, other)
         }
 
 

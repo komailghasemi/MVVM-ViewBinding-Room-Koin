@@ -1,9 +1,6 @@
 package com.trader.note.model.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 import com.trader.note.model.tables.Trade
 import kotlinx.coroutines.flow.Flow
 
@@ -14,11 +11,8 @@ interface TradeDao {
     fun getTradesByPeriodId(id: Int): Flow<List<Trade>>
 
     @Query("SELECT * FROM trade WHERE uid = :id")
-    fun getById(id: Int): Trade
+    fun getById(id: Int): Flow<Trade?>
 
-    @Insert
-    fun insert(t: Trade) : Long
-
-    @Update
-    fun update(t: Trade)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(t: Trade) : Long?
 }

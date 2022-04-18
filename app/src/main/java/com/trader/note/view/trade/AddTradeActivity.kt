@@ -13,6 +13,8 @@ import com.trader.note.view.adapters.SymbolAdapter
 import com.xdev.arch.persiancalendar.datepicker.MaterialDatePicker
 import com.xdev.arch.persiancalendar.datepicker.MaterialPickerOnPositiveButtonClickListener
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 import java.util.*
 
 
@@ -23,7 +25,9 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
     }
 
     private val symbolAdapter: SymbolAdapter by inject()
-    private val vm: AddTradeViewModel by inject()
+    private val vm: AddTradeViewModel by viewModel {
+        parametersOf(intent.getIntExtra(TRADE_PERIOD_ID, -1) , intent.getIntExtra(TRADE_ID, -1).toLong())
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +36,6 @@ class AddTradeActivity : UI<ActivityAddTradeBinding>() {
 
         uiSettings()
         observers()
-        vm.viewCreated(intent.getIntExtra(TRADE_PERIOD_ID, -1) , intent.getIntExtra(TRADE_ID, -1))
         event()
     }
 

@@ -6,6 +6,8 @@ import com.google.gson.GsonBuilder
 import com.trader.note.api.Api
 import com.trader.note.coins.Coin
 import com.trader.note.model.db.AppDatabase
+import com.trader.note.model.repo.TradeRepository
+import com.trader.note.model.repo.TradingPeriodRepository
 import com.trader.note.network.Net
 import com.trader.note.view.adapters.SymbolAdapter
 import com.trader.note.view.adapters.TradingPeriodAdapter
@@ -40,13 +42,13 @@ val viewModel = module {
         MainViewModel(get())
     }
     this.viewModel {
-        AddTradingPeriodViewModel(get())
+        AddTradingPeriodViewModel(get(), get())
     }
     this.viewModel {
-        AddTradeViewModel(get(), get(), get())
+        AddTradeViewModel(periodId = get(), tradeId = get(), get(), get(), get())
     }
     this.viewModel {
-        TradesViewModel(get(), get() , get())
+        TradesViewModel(get(), get(), get(), get())
     }
 }
 
@@ -73,6 +75,11 @@ val db = module {
     this.single { providesDatabase(androidApplication()) }
     this.single { get<AppDatabase>().tradingPeriodDao() }
     this.single { get<AppDatabase>().tradeDao() }
+}
+
+val repo = module {
+    this.factory { TradeRepository(get()) }
+    this.factory { TradingPeriodRepository(get()) }
 }
 
 val other = module {

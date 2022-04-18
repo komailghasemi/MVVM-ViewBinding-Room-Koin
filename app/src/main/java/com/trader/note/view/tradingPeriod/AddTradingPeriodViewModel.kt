@@ -1,48 +1,51 @@
 package com.trader.note.view.tradingPeriod
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.trader.note.model.dao.TradingPeriodDao
+import androidx.lifecycle.*
+import com.trader.note.model.repo.TradingPeriodRepository
 import com.trader.note.model.tables.TradingPeriod
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.util.*
 
+sealed class State {
+    object Edit : State()
+    object Closed : State()
+    object New : State()
+}
 
-class AddTradingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao) : ViewModel() {
+class AddTradingPeriodViewModel(
+    private var periodId: Int,
+    private val tradingPeriodRepository: TradingPeriodRepository
+) : ViewModel() {
 
-    fun viewCreated(periodId: Int = -1) {
-        this.periodId = if (periodId == -1) null else periodId
-        loadPeriod()
-    }
-
-    private fun loadPeriod() = viewModelScope.launch(Dispatchers.IO) {
-        if (periodId != null) {
-            val tp = tradingPeriodDao.getById(periodId!!)
-            launch(Dispatchers.Main) {
-                setName(tp.periodName)
-                setInitialInvestment(tp.initialInvestment.toString())
-                setMdd(tp.MDD.toFloat())
-                setMcl(tp.MCL.toFloat())
-                setStartDate(tp.startDate)
-                if (tp.endDate == null)
-                    _state.value = "EDIT"
-                else
-                    _state.value = "CLOSED"
+    init {
+        viewModelScope.launch {
+            tradingPeriodRepository.getById(periodId).collect { tp ->
+                if (tp != null) {
+                    setName(tp.periodName)
+                    setInitialInvestment(tp.initialInvestment.toString())
+                    setMdd(tp.MDD.toFloat())
+                    setMcl(tp.MCL.toFloat())
+                    setDescription(tp.description)
+                    startDate = tp.startDate
+                    if (tp.endDate == null)
+                        _state.value = State.Edit
+                    else
+                        _state.value = State.Closed
+                } else if (periodId == -1)
+                    _state.value = State.New
             }
-        } else
-            _state.postValue("NEW")
 
+        }
     }
 
-    private fun setStartDate(date : Date){
-        startDate = date
-    }
 
     fun setName(name: String?) {
         _name.value = name
+    }
+
+    fun setDescription(desc: String?) {
+        _description.value = desc
     }
 
     fun setInitialInvestment(value: String?) {
@@ -51,25 +54,10 @@ class AddTradingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao) 
 
     fun setMdd(value: Float) {
         _mdd.value = value.toInt()
-        calculate()
     }
 
     fun setMcl(value: Float) {
         _mcl.value = value.toInt()
-        calculate()
-    }
-
-    private fun setRpt(value: Float) {
-        _rpt.value = value
-    }
-
-    private fun setNMax(value: Int) {
-        _nMax.value = value
-    }
-
-    private fun calculate() {
-        setRpt((_mdd.value ?: 20).toFloat() / (_mcl.value ?: 2))
-        setNMax(((_mdd.value ?: 20) / (rpt.value ?: 10.0f)).toInt())
     }
 
 
@@ -77,9 +65,10 @@ class AddTradingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao) 
         if (validate()) {
             val name = _name.value!!
             val ii = _initialInvestment.value!!
+            val desc = _description.value
             val mdd = _mdd.value ?: 20
             val mcl = _mcl.value ?: 2
-            var endDate = if (close) Date() else null
+            val endDate = if (close) Date() else null
 
             upsert(
                 TradingPeriod(
@@ -87,8 +76,9 @@ class AddTradingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao) 
                     ii,
                     mdd,
                     mcl,
-                    startDate,
-                    uid = periodId,
+                    description = desc,
+                    startDate = startDate ?: Date(),
+                    uid = if (periodId == -1) null else periodId,
                     endDate = endDate
                 )
             ).invokeOnCompletion {
@@ -111,29 +101,23 @@ class AddTradingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao) 
         return true
     }
 
-    private fun upsert(tradingPeriod: TradingPeriod) = viewModelScope.launch(Dispatchers.IO) {
-        if (tradingPeriod.uid == null){
-            periodId = tradingPeriodDao.insert(tradingPeriod).toInt()
-        }
-
-        else
-            tradingPeriodDao.update(tradingPeriod)
+    private fun upsert(tradingPeriod: TradingPeriod) = viewModelScope.launch {
+        periodId = tradingPeriodRepository.upsert(tradingPeriod)?.toInt() ?: -1
 
         if (tradingPeriod.endDate == null)
-            _state.postValue("EDIT")
+            _state.value = State.Edit
         else
-            _state.postValue("CLOSED")
+            _state.value = State.Closed
     }
 
     // Models
 
-    private var periodId: Int? = null
-    private var startDate: Date = Date()
+    private var startDate: Date? = null
 
-    private val _state: MutableLiveData<String> by lazy {
-        MutableLiveData<String>()
+    private val _state: MutableLiveData<State> by lazy {
+        MutableLiveData<State>()
     }
-    val state: LiveData<String>
+    val state: LiveData<State>
         get() = _state
 
     private val _name: MutableLiveData<String> by lazy {
@@ -160,29 +144,34 @@ class AddTradingPeriodViewModel(private val tradingPeriodDao: TradingPeriodDao) 
     val initialInvestmentError: LiveData<String>
         get() = _initialInvestmentError
 
+    private val _description: MutableLiveData<String> by lazy {
+        MutableLiveData<String>()
+    }
+    val description: LiveData<String>
+        get() = _description
+
+
     private val _mdd: MutableLiveData<Int> by lazy {
-        MutableLiveData<Int>()
+        MutableLiveData<Int>(20)
     }
     val mdd: LiveData<Int>
         get() = _mdd
 
     private val _mcl: MutableLiveData<Int> by lazy {
-        MutableLiveData<Int>()
+        MutableLiveData<Int>(2)
     }
     val mcl: LiveData<Int>
         get() = _mcl
 
-    private val _rpt: MutableLiveData<Float> by lazy {
-        MutableLiveData<Float>()
-    }
     val rpt: LiveData<Float>
-        get() = _rpt
+        get() = combine(mdd.asFlow(), mcl.asFlow()) { mdd, mcl ->
+            mdd.toFloat() / mcl
+        }.asLiveData()
 
-    private val _nMax: MutableLiveData<Int> by lazy {
-        MutableLiveData<Int>()
-    }
     val nMax: LiveData<Int>
-        get() = _nMax
+        get() = combine(mdd.asFlow(), rpt.asFlow()) { mdd, rpt ->
+            (mdd / rpt).toInt()
+        }.asLiveData()
 
     private val _onSaved: MutableLiveData<Unit> by lazy {
         MutableLiveData<Unit>()

@@ -11,7 +11,7 @@ import com.marcinorlowski.fonty.Fonty
 import com.trader.note.R
 import com.trader.note.databinding.ItemTradingPeriodBinding
 import com.trader.note.utils.toPersianString
-import com.trader.note.view.viewsModel.TradingPeriodModel
+import com.trader.note.model.repo.TradingPeriodModel
 
 
 class TradingPeriodAdapter :

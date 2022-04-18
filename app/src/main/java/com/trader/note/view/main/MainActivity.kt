@@ -40,7 +40,7 @@ class MainActivity : UI<ActivityMainBinding>() {
     }
 
     private fun observers() {
-        vm.tradingPeriods.observe(this) {
+        vm.getList().observe(this) {
             lifecycleScope.launch {
                 tradingPeriodAdapter.submitData(it)
             }

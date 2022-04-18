@@ -1,54 +1,49 @@
 package com.trader.note.view.trade
 
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.trader.note.coins.Coin
-import com.trader.note.model.dao.TradeDao
-import com.trader.note.model.dao.TradingPeriodDao
+import com.trader.note.model.repo.TradeRepository
+import com.trader.note.model.repo.TradingPeriodRepository
 import com.trader.note.model.tables.Trade
-import com.trader.note.model.tables.TradingPeriod
 import com.trader.note.utils.round
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.util.*
 
-
 class AddTradeViewModel(
-    private val tradeDao: TradeDao,
-    private val tradingPeriodDao: TradingPeriodDao,
+    private var periodId: Int,
+    private var tradeId: Long,
+    private val tradeRepository: TradeRepository,
+    private val tradingPeriodRepository: TradingPeriodRepository,
     private val coin: Coin
 ) : ViewModel() {
 
+    init {
+        viewModelScope.launch {
+            tradingPeriodRepository.getById(periodId).collect {
+                mdd = it?.MDD ?: 0
+                mcl = it?.MCL ?: 0
+                initialInvestment = it?.initialInvestment ?: 0.0
 
-    fun viewCreated(periodId: Int, tradeId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            period = tradingPeriodDao.getById(periodId)
-            _symbols.postValue(coin.getCoinList())
-            this@AddTradeViewModel.tradeId = if (tradeId == -1) null else tradeId
-            loadTrade()
-        }
-    }
-
-    private fun loadTrade() {
-        if (tradeId != null) {
-            val trade = tradeDao.getById(tradeId!!)
-            viewModelScope.launch(Dispatchers.Main) {
-                setSymbol(trade.symbol)
-                setEnterPrice(trade.enterPrice.toString())
-                setSl(trade.sl.toString())
-                setTargetPrice(trade.priceTarget.toString())
-                setTargetDate(trade.dateTarget?.time ?: System.currentTimeMillis())
-                setBuyCommission(trade.buy_commission.toString())
-                setSellCommission(trade.sell_commission.toString())
-                setVolume(trade.volume.toString())
-                setDescription(trade.description)
-                setSellDate(trade.sellDate?.time)
-                setSellPrice(trade.sellPrice?.toString())
-                if (trade.sellPrice != null) {
-                    _closed.value = Unit
+                tradeRepository.getById(tradeId.toInt()).collect { trade ->
+                    if (trade != null) {
+                        setSymbol(trade.symbol)
+                        setEnterPrice(trade.enterPrice.toString())
+                        setSl(trade.sl.toString())
+                        setTargetPrice(trade.priceTarget.toString())
+                        setTargetDate(trade.dateTarget?.time ?: System.currentTimeMillis())
+                        setBuyCommission(trade.buy_commission.toString())
+                        setSellCommission(trade.sell_commission.toString())
+                        setVolume(trade.volume.toString())
+                        setDescription(trade.description)
+                        setSellDate(trade.sellDate?.time)
+                        setSellPrice(trade.sellPrice?.toString())
+                        if (trade.sellPrice != null) {
+                            _closed.value = Unit
+                        }
+                    }
                 }
             }
         }
@@ -60,19 +55,14 @@ class AddTradeViewModel(
 
     fun setVolume(vol: String?) {
         _volume.value = vol?.toDoubleOrNull()
-        calculateSarBeSar()
     }
 
     fun setBuyCommission(bc: String?) {
         _buyCommission.value = bc?.toDoubleOrNull()
-        calculateVolume()
-        calculateSarBeSar()
     }
 
     fun setSellCommission(sc: String?) {
         _sellCommission.value = sc?.toDoubleOrNull()
-        calculateVolume()
-        calculateSarBeSar()
     }
 
     fun setTargetDate(ms: Long) {
@@ -81,20 +71,14 @@ class AddTradeViewModel(
 
     fun setTargetPrice(targetPrice: String?) {
         _targetPrice.value = targetPrice?.toDoubleOrNull()
-        calculateRRR()
     }
 
     fun setSl(sl: String?) {
         _sl.value = sl?.toDoubleOrNull()
-        calculateVolume()
-        calculateRRR()
     }
 
     fun setEnterPrice(price: String?) {
         _enterPrice.value = price?.toDoubleOrNull()
-        calculateVolume()
-        calculateRRR()
-        calculateSarBeSar()
     }
 
     fun setSellPrice(price: String?) {
@@ -103,85 +87,11 @@ class AddTradeViewModel(
     }
 
     fun setSellDate(ms: Long?) {
-        if (ms != null)
-            _sellDate.value = ms!!
+        ms?.let { _sellDate.value = it }
     }
 
     fun setSymbol(symbol: String?) {
         _symbol.value = symbol
-    }
-
-    private fun calculateVolume() {
-        // R2 = RPT
-        // U2 = investment
-        // K2 = buy price
-        // J2 = SL
-        // T2_1 = sell Commission
-        // T2_2 = buy Commission
-
-        val R2 = (period.MDD / period.MCL).toDouble()
-        val U2 = period.initialInvestment
-        val K2 = (_enterPrice.value ?: 0.0).toDouble()
-        val J2 = (_sl.value ?: 0.0).toDouble()
-        val T2_1 = (_sellCommission.value ?: 0.0).toDouble()
-        val T2_2 = (_buyCommission.value ?: 0.0).toDouble()
-
-
-        val A = ((R2 / 100) * U2)
-        val B = ((K2 - J2) + ((J2 * T2_1) + (K2 * T2_2)))
-        if (B == 0.0) {
-            _slError.value = "حد ضرر نمیتواند برابر یا بیشتر از مبلغ خرید باشد"
-            _volumeHelper.value = 0.0
-        } else {
-            val vol = A / B
-            _volumeHelper.value = vol.round().toDouble()
-        }
-
-
-    }
-
-    private fun calculateRRR() {
-
-        // I2 = Target Price
-        // K2 = Buy Price
-        // J2 = sl
-
-        val I2 = (_targetPrice.value ?: 0.0).toDouble()
-        val K2 = (_enterPrice.value ?: 0.0).toDouble()
-        val J2 = (_sl.value ?: 0.0).toDouble()
-
-        // (I2 - K2) / (K2 - J2)
-
-        val A = (I2 - K2)
-        val B = (K2 - J2)
-
-        if (B == 0.0) {
-            _slError.value = "حد ضرر نمیتواند برابر یا بیشتر از مبلغ خرید باشد"
-            _rrr.value = 0.0
-        } else {
-            val rrr = A / B
-            _rrr.value = rrr.round().toDouble()
-        }
-    }
-
-    private fun calculateSarBeSar() {
-        // K2 = Buy Price
-        // F2 = volume
-        // T2_1 = sell Commission
-        // T2_2 = buy Commission
-
-        val F2 = (_volume.value ?: 0.0).toDouble()
-        val K2 = (_enterPrice.value ?: 0.0).toDouble()
-        val T2_1 = (_sellCommission.value ?: 0.0).toDouble()
-        val T2_2 = (_buyCommission.value ?: 0.0).toDouble()
-
-        //( K2 * F2 / F2) + (T2_1 + T2_2)
-
-        if (F2 != 0.0) {
-            val sarBeSar = (K2 * F2 / F2) + (T2_1 + T2_2)
-            _sarBeSar.value = sarBeSar
-        } else
-            _sarBeSar.value = 0.0
     }
 
 
@@ -207,7 +117,7 @@ class AddTradeViewModel(
             } else null
             upsert(
                 Trade(
-                    period.uid!!,
+                    periodId,
                     symbol,
                     enterDate,
                     enterPrice,
@@ -220,7 +130,7 @@ class AddTradeViewModel(
                     sellDate = closeDate,
                     sellPrice = closePrice,
                     description = description,
-                    uid = tradeId
+                    uid = if (tradeId == -1L) null else tradeId.toInt()
                 )
             ).invokeOnCompletion {
                 if (it == null) {
@@ -264,23 +174,19 @@ class AddTradeViewModel(
 
 
     private fun upsert(trade: Trade) = viewModelScope.launch(Dispatchers.IO) {
-
-        if (trade.uid == null) {
-            tradeId = tradeDao.insert(trade).toInt()
-        } else
-            tradeDao.update(trade)
+        tradeId = tradeRepository.upsert(trade) ?: -1L
     }
 
 
     // Models
-    private lateinit var period: TradingPeriod
-    private var tradeId: Int? = null
 
-    private val _symbols: MutableLiveData<List<String>> by lazy {
-        MutableLiveData()
-    }
+    private var mdd: Int = 0
+    private var mcl: Int = 0
+    private var initialInvestment: Double = 0.0
+
+
     val symbols: LiveData<List<String>>
-        get() = _symbols
+        get() = coin.getCoinList().asLiveData()
 
     private val _symbolError: MutableLiveData<String> by lazy {
         MutableLiveData()
@@ -294,10 +200,10 @@ class AddTradeViewModel(
     val symbol: LiveData<String>
         get() = _symbol
 
-    private val _enterPrice: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
+    private val _enterPrice: MutableLiveData<Double?> by lazy {
+        MutableLiveData<Double?>()
     }
-    val enterPrice: LiveData<Double>
+    val enterPrice: LiveData<Double?>
         get() = _enterPrice
 
     private val _enterPriceError: MutableLiveData<String> by lazy {
@@ -306,10 +212,10 @@ class AddTradeViewModel(
     val enterPriceError: LiveData<String>
         get() = _enterPriceError
 
-    private val _sl: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
+    private val _sl: MutableLiveData<Double?> by lazy {
+        MutableLiveData<Double?>()
     }
-    val sl: LiveData<Double>
+    val sl: LiveData<Double?>
         get() = _sl
 
     private val _slError: MutableLiveData<String> by lazy {
@@ -318,10 +224,10 @@ class AddTradeViewModel(
     val slError: LiveData<String>
         get() = _slError
 
-    private val _targetPrice: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
+    private val _targetPrice: MutableLiveData<Double?> by lazy {
+        MutableLiveData<Double?>()
     }
-    val targetPrice: LiveData<Double>
+    val targetPrice: LiveData<Double?>
         get() = _targetPrice
 
     private val _targetDate: MutableLiveData<Long> = MutableLiveData<Long>().apply {
@@ -331,22 +237,22 @@ class AddTradeViewModel(
     val targetDate: LiveData<Long>
         get() = _targetDate
 
-    private val _buyCommission: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
+    private val _buyCommission: MutableLiveData<Double?> by lazy {
+        MutableLiveData<Double?>(0.0)
     }
-    val buyCommission: LiveData<Double>
+    val buyCommission: LiveData<Double?>
         get() = _buyCommission
 
-    private val _sellCommission: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
+    private val _sellCommission: MutableLiveData<Double?> by lazy {
+        MutableLiveData<Double?>(0.0)
     }
-    val sellCommission: LiveData<Double>
+    val sellCommission: LiveData<Double?>
         get() = _sellCommission
 
-    private val _volume: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
+    private val _volume: MutableLiveData<Double?> by lazy {
+        MutableLiveData<Double?>()
     }
-    val volume: LiveData<Double>
+    val volume: LiveData<Double?>
         get() = _volume
 
     private val _volumeError: MutableLiveData<String> by lazy {
@@ -355,23 +261,59 @@ class AddTradeViewModel(
     val volumeError: LiveData<String>
         get() = _volumeError
 
-    private val _volumeHelper: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
+
     val volumeHelper: LiveData<Double>
-        get() = _volumeHelper
+        get() = combine(
+            enterPrice.asFlow(),
+            sl.asFlow(),
+            sellCommission.asFlow(),
+            buyCommission.asFlow()
+        ) { enter, sl, sCom, bCom ->
+            val rpt = (mdd / mcl).toDouble()
+            val A = ((rpt / 100) * initialInvestment)
+            val B =
+                (((enter ?: 0.0) - (sl ?: 0.0)) + (((sl ?: 0.0) * (sCom ?: 0.0)) + ((enter ?: 0.0) * (bCom ?: 0.0))))
+            if (B == 0.0) {
+                _slError.value = "حد ضرر نمیتواند برابر یا بیشتر از مبلغ خرید باشد"
+                0.0
+            } else {
+                val vol = A / B
+                vol.round().toDouble()
+            }
+        }.asLiveData()
 
-    private val _rrr: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
     val rrr: LiveData<Double>
-        get() = _rrr
+        get() = combine(
+            targetPrice.asFlow(),
+            enterPrice.asFlow(),
+            sl.asFlow()
+        ) { target, enter, sl ->
 
-    private val _sarBeSar: MutableLiveData<Double> by lazy {
-        MutableLiveData<Double>()
-    }
+            val A = ((target ?: 0.0) - (enter ?: 0.0))
+            val B = ((enter ?: 0.0) - (sl ?: 0.0))
+
+            if (B == 0.0) {
+                _slError.value = "حد ضرر نمیتواند برابر یا بیشتر از مبلغ خرید باشد"
+                0.0
+            } else {
+                val rrr = A / B
+                rrr.round().toDouble()
+            }
+        }.asLiveData()
+
     val sarBeSar: LiveData<Double>
-        get() = _sarBeSar
+        get() = combine(
+            volume.asFlow(),
+            enterPrice.asFlow(),
+            sellCommission.asFlow(),
+            buyCommission.asFlow()
+        ) { volume, enter, sCom, bCom ->
+            if (volume != null && volume != 0.0) {
+                val sarBeSar = ((enter ?: 0.0) * volume / volume) + ((sCom ?: 0.0) + (bCom ?: 0.0))
+                sarBeSar
+            } else
+                0.0
+        }.asLiveData()
 
     private val _description: MutableLiveData<String> by lazy {
         MutableLiveData<String>()

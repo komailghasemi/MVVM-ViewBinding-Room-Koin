@@ -80,7 +80,6 @@ fun EditText.currency() {
 fun EditText.text() = text?.toString()?.replace(",", "")
 
 fun Double.round(): BigDecimal {
-    log(this)
     val num = this.toBigDecimal().toString().split(".")
     val number = num[1]
     for (i in number.indices) {
